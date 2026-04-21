@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vulnerability Management Program | Christopher Ham</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#060d1b;--bg2:#09152a;--bg3:#0d1c38;
+  --border:#162a4a;--border2:#1e3864;
+  --blue:#2d7ef6;--blue-l:#5b9eff;--blue-d:#1a5fd4;
+  --green:#22c55e;--amber:#f59e0b;
+  --text:#dde6f5;--muted:#8da8cc;--dim:#4a6888;--white:#f0f6ff;
+  /* backward compat */
+  --ink:#060d1b;--ink2:#09152a;--ink3:#0d1c38;
+  --sky:#2d7ef6;--sky-dim:#1a5fd4;
+  --teal:#22c55e;--teal-dim:#16a34a;
+  --gold:#f59e0b;--gold-dim:#d97706;
+  --rose:#ef4444;--rose-dim:#dc2626;
+  --slate:#4a6888;--mist:#8da8cc;--cloud:#dde6f5;--glow:rgba(45,126,246,.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:400;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(45,126,246,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(45,126,246,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal-d1{transition-delay:.1s}.reveal-d2{transition-delay:.2s}.reveal-d3{transition-delay:.3s}
+
+nav.lab-nav{position:fixed;top:0;width:100%;z-index:900;background:rgba(6,13,27,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 3rem;height:60px;gap:1rem}
+.nav-brand{display:flex;align-items:center;gap:.65rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;color:var(--white);text-decoration:none;letter-spacing:.04em;flex-shrink:0}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2.5s ease infinite;flex-shrink:0}
+.nav-middle{display:flex;gap:1.8rem;list-style:none}
+.nav-middle a{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;text-transform:uppercase;transition:color .2s}
+.nav-middle a:hover{color:var(--blue-l)}
+.nav-back-btn{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:.4rem;transition:color .2s;flex-shrink:0;white-space:nowrap}
+.nav-back-btn:hover{color:var(--blue-l)}
+.nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:.5rem;background:none;border:none;flex-shrink:0}
+.nav-hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:1px}
+.nav-mobile-lab{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(6,13,27,.99);border-bottom:1px solid var(--border);z-index:899;flex-direction:column}
+.nav-mobile-lab.open{display:flex}
+.nav-mobile-lab a{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--muted);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;padding:1rem 1.5rem;border-bottom:1px solid var(--border);transition:color .2s}
+.nav-mobile-lab a:hover{color:var(--white)}
+.nav-mobile-lab a:last-child{color:var(--blue-l);border-bottom:none}
+
+.breadcrumb{display:flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--dim);margin-bottom:1.8rem;opacity:0;animation:fadeUp .6s ease forwards .1s}
+.breadcrumb a{color:var(--blue-l);text-decoration:none;transition:color .2s}.breadcrumb a:hover{color:var(--white)}.breadcrumb span{opacity:.4}
+
+.lab-hero{position:relative;padding:8.5rem 3rem 4.5rem;overflow:hidden;min-height:55vh;display:flex;align-items:center}
+.lab-hero-bg{position:absolute;inset:0;z-index:1}
+.lab-hero-dots{position:absolute;inset:0;z-index:1;background-image:radial-gradient(circle,rgba(45,126,246,.07) 1px,transparent 1px);background-size:30px 30px}
+.lab-hero-inner{position:relative;z-index:2;max-width:1200px;width:100%;margin:0 auto}
+.lab-cat{display:inline-flex;align-items:center;gap:.55rem;font-family:'JetBrains Mono',monospace;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .85rem;border:1px solid;border-radius:2px;width:fit-content;margin-bottom:1.3rem;opacity:0;animation:fadeUp .6s ease forwards .2s}
+.lab-cat-dot{width:5px;height:5px;border-radius:50%;animation:pulse 2s ease infinite}
+.lab-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(2.4rem,5vw,4.2rem);line-height:.92;color:var(--white);letter-spacing:-.01em;opacity:0;animation:fadeUp .7s ease forwards .3s}
+.lab-title em{font-style:normal}
+.lab-lead{max-width:680px;margin-top:1.3rem;font-size:1rem;color:var(--muted);font-weight:300;line-height:1.8;opacity:0;animation:fadeUp .7s ease forwards .45s}
+.lab-lead strong{color:var(--text);font-weight:500}
+.lab-meta-bar{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.8rem;opacity:0;animation:fadeUp .7s ease forwards .55s}
+.lab-meta-pill{display:flex;align-items:center;gap:.45rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);border:1px solid var(--border2);padding:.28rem .7rem;background:rgba(255,255,255,.02);white-space:nowrap;border-radius:2px}
+.lab-meta-pill svg{opacity:.45;flex-shrink:0}
+.lab-stats-strip{display:flex;gap:2.5rem;margin-top:2.2rem;padding-top:1.8rem;border-top:1px solid var(--border);flex-wrap:wrap;opacity:0;animation:fadeUp .7s ease forwards .65s}
+.ls-n{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.4rem;line-height:1}
+.ls-n sup{font-size:1.1rem}
+.ls-l{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem}
+
+section{padding:5rem 3rem;position:relative;z-index:1}
+.s-alt{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.inner{max-width:1200px;margin:0 auto}
+.s-head{display:flex;align-items:center;gap:1rem;margin-bottom:2.8rem}
+.s-num{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--blue-l);letter-spacing:.16em;opacity:.65;white-space:nowrap}
+.s-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:2rem;color:var(--white);letter-spacing:.02em;white-space:nowrap}
+.s-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border2) 0%,transparent 100%)}
+
+.btn-fill,.btn-primary{display:inline-flex;align-items:center;gap:.55rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;background:var(--blue);color:#fff;padding:.75rem 1.6rem;text-decoration:none;border-radius:2px;transition:background .2s,transform .2s}
+.btn-fill:hover,.btn-primary:hover{background:var(--blue-d);transform:translateY(-2px)}
+.btn-ghost,.btn-outline{display:inline-flex;align-items:center;gap:.55rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text);border:1px solid var(--border2);padding:.75rem 1.6rem;text-decoration:none;border-radius:2px;transition:border-color .2s,color .2s,transform .2s}
+.btn-ghost:hover,.btn-outline:hover{border-color:var(--blue-l);color:var(--blue-l);transform:translateY(-2px)}
+.btn-teal{display:inline-flex;align-items:center;gap:.55rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;background:var(--green);color:#000;padding:.75rem 1.6rem;text-decoration:none;border-radius:2px;transition:background .2s,transform .2s}
+.btn-teal:hover{background:var(--teal-dim);transform:translateY(-2px)}
+.btn-rose{display:inline-flex;align-items:center;gap:.55rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;background:var(--rose);color:#fff;padding:.75rem 1.6rem;text-decoration:none;border-radius:2px;transition:background .2s,transform .2s}
+.btn-rose:hover{background:var(--rose-dim);transform:translateY(-2px)}
+
+.ptag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.06em;padding:.28rem .65rem;border:1px solid var(--border2);color:var(--muted);background:var(--bg3);transition:all .2s;border-radius:2px}
+.ptag.hot{border-color:rgba(45,126,246,.4);color:var(--blue-l);background:rgba(45,126,246,.07)}
+.ptag.warm{border-color:rgba(245,158,11,.35);color:var(--amber);background:rgba(245,158,11,.05)}
+.ptag.teal{border-color:rgba(34,197,94,.3);color:var(--green);background:rgba(34,197,94,.06)}
+
+.timeline{position:relative;padding-left:2rem}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--blue) 0%,var(--border2) 100%)}
+.tl-entry{position:relative;margin-bottom:2.5rem;padding-left:2rem}
+.tl-entry::before{content:'';position:absolute;left:-2.55rem;top:.4rem;width:11px;height:11px;border-radius:50%;background:var(--blue);border:2px solid var(--bg2);box-shadow:0 0 10px rgba(45,126,246,.4)}
+.tl-entry.sky::before,.tl-entry.blue::before{background:var(--blue);box-shadow:0 0 10px rgba(45,126,246,.4)}
+.tl-entry.gold::before{background:var(--amber);box-shadow:0 0 10px rgba(245,158,11,.4)}
+.tl-entry.rose::before{background:var(--rose);box-shadow:0 0 10px rgba(239,68,68,.4)}
+.tl-entry.teal::before{background:var(--green);box-shadow:0 0 10px rgba(34,197,94,.4)}
+.tl-round{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--blue-l);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.25rem}
+.tl-entry.gold .tl-round{color:var(--amber)}.tl-entry.rose .tl-round{color:var(--rose)}.tl-entry.teal .tl-round{color:var(--green)}
+.tl-time{font-family:'JetBrains Mono',monospace;font-size:.63rem;color:var(--blue-l);letter-spacing:.06em;margin-bottom:.3rem}
+.tl-entry.gold .tl-time{color:var(--amber)}.tl-entry.rose .tl-time{color:var(--rose)}
+.tl-heading{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.1rem;color:var(--white);margin-bottom:.4rem;letter-spacing:.01em}
+.tl-body{font-size:.87rem;color:var(--muted);font-weight:300;line-height:1.7}
+.tl-body strong{color:var(--text);font-weight:500}
+
+.code-block{background:var(--bg3);border:1px solid var(--border2);border-left:3px solid var(--blue);padding:1.4rem;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.7;white-space:pre;overflow-x:auto;margin-bottom:1.2rem;-webkit-overflow-scrolling:touch;border-radius:2px}
+.code-comment{color:var(--dim)}.code-table{color:var(--amber)}.code-fn{color:var(--blue-l)}.code-op{color:var(--muted)}.code-str,.code-string{color:var(--green)}.code-keyword{color:var(--rose)}
+
+.lab-nav-footer{background:var(--bg2);border-top:1px solid var(--border);padding:4rem 3rem;position:relative;z-index:1}
+.lab-nav-footer-inner{max-width:1200px;margin:0 auto}
+.lnf-eyebrow{font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem}
+.lnf-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2rem;color:var(--white);margin-bottom:.5rem;letter-spacing:.01em}
+.lnf-sub{font-size:.9rem;color:var(--muted);font-weight:300;max-width:480px;margin-bottom:1.8rem;line-height:1.7}
+.lnf-btns{display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.lnf-pagination{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;padding-top:2rem;border-top:1px solid var(--border)}
+.lnf-page-link{display:flex;align-items:center;gap:.6rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;transition:color .2s}
+.lnf-page-link:hover{color:var(--blue-l)}
+.lnf-page-meta{font-size:.54rem;color:var(--dim);display:block;margin-bottom:.12rem;letter-spacing:.1em}
+.lnf-page-name{color:var(--text);font-size:.7rem;display:block}
+
+footer.lab-site-footer{background:var(--bg);border-top:1px solid var(--border);padding:1.3rem 3rem;display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);position:relative;z-index:1}
+footer.lab-site-footer span{color:var(--text)}
+
+@media(max-width:900px){
+  nav.lab-nav{padding:0 1.2rem}
+  .nav-middle{display:none}
+  .nav-back-btn{display:none}
+  .nav-hamburger{display:flex}
+  section{padding:4rem 1.5rem}
+  .lab-hero{padding:7rem 1.5rem 3rem}
+  footer.lab-site-footer{padding:1.2rem 1.5rem;flex-direction:column;gap:.5rem;text-align:center}
+  .lab-nav-footer{padding:3rem 1.5rem}
+  .lnf-pagination{flex-direction:column;align-items:flex-start}
+  .s-title{white-space:normal;font-size:1.6rem}
+}
+@media(max-width:700px){
+  .lab-title{font-size:2.2rem}
+  .ls-n{font-size:1.8rem}
+}
+
+</style>
+</head>
+<body>
+<nav class="lab-nav">
+  <a href="index.html" class="nav-brand"><span class="nav-dot"></span>CHRISTOPHER HAM</a>
+  <ul class="nav-middle">
+    
+    <li><a href="index.html#projects">All Labs</a></li>
+    <li><a href="threat-hunt.html">Threat Hunt: TOR →</a></li>
+  </ul>
+  <a href="index.html#projects" class="nav-back-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>All Labs</a>
+  <button class="nav-hamburger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="nav-mobile-lab" id="mobileNavLab">
+  <a href="index.html" onclick="closeMobileNav()">Portfolio Home</a>
+  <a href="index.html#projects" onclick="closeMobileNav()">All Labs</a>
+  
+  <a href="threat-hunt.html" onclick="closeMobileNav()">Threat Hunt: TOR →</a>
+</div>
+
+
+<div class="lab-hero">
+  <div class="lab-hero-bg" style="background:radial-gradient(ellipse 70% 70% at 60% 40%,rgba(20,184,166,.07) 0%,transparent 65%),linear-gradient(160deg,#06101c 0%,#091522 100%)"></div>
+  <div class="lab-hero-dots"></div>
+  <div class="lab-hero-inner">
+    <div class="breadcrumb">
+      <a href="index.html">Portfolio</a><span>/</span>
+      <a href="index.html#projects">Labs</a><span>/</span>
+      VM Program
+    </div>
+    <div class="lab-cat">
+      <div class="lab-cat-dot"></div>
+      Vulnerability Management · Azure · Tenable
+    </div>
+    
+<h1 class="lab-title">Vulnerability<br>Management<br><em>Program</em></h1>
+<p class="lab-lead">
+  Built a full enterprise VM lifecycle from zero — drafted formal policy, ran <strong>stakeholder CAB process</strong>, deployed Tenable on Azure VMs, and executed four targeted PowerShell remediation rounds. 
+  <strong>76% total reduction</strong>. 100% of critical findings cleared.
+</p>
+<div class="lab-meta-bar">
+  <div class="lab-meta-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Azure Virtual Machines</div>
+  <div class="lab-meta-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Tenable Nessus</div>
+  <div class="lab-meta-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>PowerShell Remediation</div>
+  <div class="lab-meta-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Formal VM Policy</div>
+</div>
+<div class="lab-stats-strip">
+  <div><div class="ls-n" style="color:var(--teal)">76<sup>%</sup></div><div class="ls-l">Total Reduction</div></div>
+  <div><div class="ls-n" style="color:var(--rose)">100<sup>%</sup></div><div class="ls-l">Criticals Cleared</div></div>
+  <div><div class="ls-n" style="color:var(--gold)">26→6</div><div class="ls-l">Final Count</div></div>
+  <div><div class="ls-n" style="color:var(--sky)">4</div><div class="ls-l">Remediation Rounds</div></div>
+</div>
+  </div>
+</div>
+
+
+<!-- PROCESS -->
+<section class="s-alt">
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 01</div>
+      <h2 class="s-title">Remediation Process</h2>
+      <div class="s-line"></div>
+    </div>
+    <div class="timeline">
+      <div class="tl-entry sky reveal">
+        <div class="tl-round">Phase 01 — Policy &amp; Scope</div>
+        <div class="tl-heading">Formal VM Policy Drafted</div>
+        <div class="tl-body">Wrote a formal Vulnerability Management Policy from scratch — defined scope, risk tolerance, SLA windows by severity (Critical 24hr, High 7d, Medium 30d), remediation ownership, and exception handling. Presented to mock CAB for stakeholder buy-in.</div>
+      </div>
+      <div class="tl-entry reveal">
+        <div class="tl-round">Phase 02 — Discovery</div>
+        <div class="tl-heading">Tenable Nessus Baseline Scan</div>
+        <div class="tl-body">Deployed Tenable Nessus against Azure Windows VMs. Baseline scan returned <strong>26 total findings</strong> across Critical, High, and Medium severities. Findings exported, prioritized by CVSS score and exploitability, and mapped to remediation owners.</div>
+      </div>
+      <div class="tl-entry gold reveal">
+        <div class="tl-round">Round 01</div>
+        <div class="tl-heading">Wireshark Removal — Unauthorized Tool</div>
+        <div class="tl-body">Wireshark identified as unauthorized network capture software with associated CVEs. Silent uninstall PowerShell script deployed across all VMs. Post-remediation scan confirmed removal and finding closure across all affected systems.</div>
+      </div>
+      <div class="tl-entry gold reveal">
+        <div class="tl-round">Round 02</div>
+        <div class="tl-heading">TLS 1.0 / 1.1 &amp; Weak Cipher Suites Disabled</div>
+        <div class="tl-body">Deprecated TLS protocols disabled via PowerShell registry modifications and Group Policy. RC4 and other weak cipher suites replaced with TLS 1.2+ AES-GCM suite configuration. Closed BEAST and POODLE attack vectors.</div>
+      </div>
+      <div class="tl-entry gold reveal">
+        <div class="tl-round">Round 03</div>
+        <div class="tl-heading">Guest Account Removed from Administrators</div>
+        <div class="tl-body">Critical finding: Guest account had been added to the local Administrators group — unauthenticated privilege escalation path. Removed via PowerShell and confirmed via post-scan. <strong>100% of critical findings cleared</strong> after this round.</div>
+      </div>
+      <div class="tl-entry gold reveal">
+        <div class="tl-round">Round 04</div>
+        <div class="tl-heading">Windows OS Patching — CVE Backlog</div>
+        <div class="tl-body">Applied Windows Update patching in structured sequence with reboot verification. Addressed outstanding kernel and OS-level CVEs from delayed patch cycles. Reduced High severity count by <strong>90%</strong>. Remaining 6 findings formally risk-accepted with documented justification.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINDINGS -->
+<section>
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 02</div>
+      <h2 class="s-title">Key Findings Remediated</h2>
+      <div class="s-line"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem">
+      <div style="background:var(--ink3);border:1px solid var(--border2);border-left:3px solid var(--rose);padding:1.6rem;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)" class="reveal">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--rose);border:1px solid rgba(244,63,94,.3);background:rgba(244,63,94,.06);padding:.15rem .45rem;width:fit-content;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">Critical</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);margin-bottom:.4rem">Guest Account in Administrators</div>
+        <div style="font-size:.83rem;color:var(--mist);font-weight:300;line-height:1.6">Unauthenticated local privilege escalation. Guest account had full admin access — removed via PowerShell and confirmed closed.</div>
+      </div>
+      <div style="background:var(--ink3);border:1px solid var(--border2);border-left:3px solid var(--gold);padding:1.6rem;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)" class="reveal reveal-d1">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--gold);border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.05);padding:.15rem .45rem;width:fit-content;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">High</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);margin-bottom:.4rem">TLS 1.0 / 1.1 Enabled</div>
+        <div style="font-size:.83rem;color:var(--mist);font-weight:300;line-height:1.6">Deprecated protocols exposing systems to BEAST and POODLE. Disabled via registry and Group Policy. Weak ciphers removed concurrently.</div>
+      </div>
+      <div style="background:var(--ink3);border:1px solid var(--border2);border-left:3px solid var(--sky);padding:1.6rem;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)" class="reveal reveal-d2">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--sky);border:1px solid rgba(14,165,233,.3);background:rgba(14,165,233,.06);padding:.15rem .45rem;width:fit-content;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">High</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);margin-bottom:.4rem">Wireshark — Unauthorized Tool</div>
+        <div style="font-size:.83rem;color:var(--mist);font-weight:300;line-height:1.6">Network capture tool unauthorized, multiple CVEs. Silent uninstall script deployed. Post-scan confirmed removal across all VMs.</div>
+      </div>
+      <div style="background:var(--ink3);border:1px solid var(--border2);border-left:3px solid var(--teal);padding:1.6rem;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)" class="reveal">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--teal);border:1px solid rgba(20,184,166,.3);background:rgba(20,184,166,.05);padding:.15rem .45rem;width:fit-content;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">High</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);margin-bottom:.4rem">Outstanding OS CVEs</div>
+        <div style="font-size:.83rem;color:var(--mist);font-weight:300;line-height:1.6">Unpatched Windows kernel CVEs from delayed patch cycles. Structured patching with reboot verification. High severity reduced 90%.</div>
+      </div>
+      <div style="background:var(--ink3);border:1px solid var(--border2);border-left:3px solid var(--sky);padding:1.6rem;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)" class="reveal reveal-d1">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--sky);border:1px solid rgba(14,165,233,.3);background:rgba(14,165,233,.06);padding:.15rem .45rem;width:fit-content;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">Medium</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);margin-bottom:.4rem">Weak Cipher Suite Configuration</div>
+        <div style="font-size:.83rem;color:var(--mist);font-weight:300;line-height:1.6">RC4 and deprecated suites enabled. Hardened to TLS 1.2+ AES-GCM via PowerShell registry and IIS configuration.</div>
+      </div>
+      <div style="background:var(--ink3);border:1px solid var(--border2);border-left:3px solid var(--border2);padding:1.6rem;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)" class="reveal reveal-d2">
+        <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--mist);border:1px solid var(--border2);padding:.15rem .45rem;width:fit-content;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.7rem">Informational</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--white);margin-bottom:.4rem">Residual Findings — Risk Accepted</div>
+        <div style="font-size:.83rem;color:var(--mist);font-weight:300;line-height:1.6">6 remaining after 4 rounds — reviewed, risk-accepted per VM policy with justification, risk owner sign-off, and scheduled next-cycle remediation.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section class="s-alt">
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 03</div>
+      <h2 class="s-title">Remediation Outcomes</h2>
+      <div class="s-line"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem">
+      <div style="background:var(--ink2);border:1px solid var(--border2);border-top:3px solid var(--teal);padding:2rem 1.5rem;text-align:center;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)" class="reveal">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;color:var(--teal);line-height:1;margin-bottom:.3rem">76<sup style="font-size:1.3rem">%</sup></div>
+        <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em">Total Reduction</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--border2);border-top:3px solid var(--rose);padding:2rem 1.5rem;text-align:center;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)" class="reveal reveal-d1">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;color:var(--rose);line-height:1;margin-bottom:.3rem">100<sup style="font-size:1.3rem">%</sup></div>
+        <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em">Criticals Cleared</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--border2);border-top:3px solid var(--gold);padding:2rem 1.5rem;text-align:center;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)" class="reveal reveal-d2">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;color:var(--gold);line-height:1;margin-bottom:.3rem">90<sup style="font-size:1.3rem">%</sup></div>
+        <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em">High Severity Closed</div>
+      </div>
+      <div style="background:var(--ink2);border:1px solid var(--border2);border-top:3px solid var(--sky);padding:2rem 1.5rem;text-align:center;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)" class="reveal reveal-d3">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:3rem;color:var(--sky);line-height:1;margin-bottom:.3rem">26→6</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--slate);text-transform:uppercase;letter-spacing:.1em">Final Count</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section>
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 04</div>
+      <h2 class="s-title">Tools &amp; Environment</h2>
+      <div class="s-line"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.4rem" class="reveal">
+      <span class="ptag hot">Tenable Nessus</span><span class="ptag hot">Azure Virtual Machines</span><span class="ptag hot">PowerShell</span><span class="ptag hot">BASH</span>
+      <span class="ptag warm">Windows Server 2022</span><span class="ptag warm">Group Policy</span>
+      <span class="ptag">CAB Process</span><span class="ptag">CVE Analysis</span><span class="ptag">TLS Hardening</span><span class="ptag">Patch Management</span><span class="ptag">Risk Acceptance Documentation</span><span class="ptag">VM Policy Drafting</span>
+    </div>
+  </div>
+</section>
+
+
+<div class="lab-nav-footer">
+  <div class="lab-nav-footer-inner">
+    <div class="lnf-eyebrow">// VM Program</div>
+    <div class="lnf-title">Continue Exploring</div>
+    <div class="lnf-sub">Return to the portfolio or navigate to the next lab project.</div>
+    <div class="lnf-btns">
+      <a href="index.html#projects" class="btn-outline"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>All Labs</a>
+      
+      <a href="threat-hunt.html" class="btn-primary">Threat Hunt: TOR<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+    </div>
+    <div class="lnf-pagination">
+      <div></div>
+      <a href="threat-hunt.html" class="lnf-page-link"><div style="text-align:right"><span class="lnf-page-meta">Next Lab</span><span class="lnf-page-name">Threat Hunt: TOR</span></div><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+    </div>
+  </div>
+</div>
+<footer class="lab-site-footer">
+  <div><span>Christopher Ham</span> · Durham, NC · SOC Analyst</div>
+  <div>cham252.github.io</div>
+</footer>
+<script>
+(function(){
+  window.toggleMobileNav=function(){document.getElementById('mobileNavLab').classList.toggle('open')};
+  window.closeMobileNav=function(){document.getElementById('mobileNavLab').classList.remove('open')};
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')});
+  },{threshold:.09});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>CAP 195.2.1 — Legacy Server Breach | Christopher Ham</title>
+<meta name="description" content="Per Scholas Capstone: Full SOC simulation — CVE-2011-2523 exploitation, NIST SP 800-61 incident response, containment, eradication, and system hardening on a legacy Ubuntu server.">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060d1b;--bg2:#09152a;--bg3:#0d1c38;--bg4:#112044;
+  --border:#162a4a;--border2:#1e3864;
+  --blue:#2d7ef6;--blue-l:#5b9eff;--blue-d:#1a5fd4;
+  --green:#22c55e;--amber:#f59e0b;--red:#ef4444;--red-l:#f87171;
+  --text:#dde6f5;--muted:#8da8cc;--dim:#4a6888;--white:#f0f6ff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:400;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(45,126,246,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(45,126,246,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal-d1{transition-delay:.1s}.reveal-d2{transition-delay:.2s}.reveal-d3{transition-delay:.3s}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;z-index:900;background:rgba(6,13,27,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 3.5rem;height:60px}
+.nav-brand{display:flex;align-items:center;gap:.7rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.1rem;color:var(--white);text-decoration:none;letter-spacing:.04em}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2.5s ease infinite;flex-shrink:0}
+.nav-back{font-family:'JetBrains Mono',monospace;font-size:.67rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;text-transform:uppercase;transition:color .2s;display:flex;align-items:center;gap:.4rem}
+.nav-back:hover{color:var(--blue-l)}
+.nav-cta{font-family:'JetBrains Mono',monospace;font-size:.67rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;background:var(--blue);color:#fff;padding:.48rem 1.3rem;text-decoration:none;border-radius:2px;transition:background .2s}
+.nav-cta:hover{background:var(--blue-d)}
+
+/* SHARED */
+section{padding:5rem 3.5rem;position:relative;z-index:1}
+.s-alt{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.inner{max-width:1100px;margin:0 auto}
+.s-head{display:flex;align-items:center;gap:1rem;margin-bottom:2.5rem}
+.s-num{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--blue-l);letter-spacing:.16em;opacity:.65}
+.s-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:2rem;color:var(--white);letter-spacing:.02em}
+.s-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border2) 0%,transparent 100%)}
+
+/* HERO */
+#hero{position:relative;min-height:72vh;display:flex;align-items:center;padding:7rem 3.5rem 4rem;overflow:hidden}
+.hero-glow{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 60% 55% at 50% 45%,rgba(239,68,68,.06) 0%,transparent 60%),radial-gradient(ellipse 35% 40% at 90% 20%,rgba(45,126,246,.04) 0%,transparent 50%)}
+.hero-inner{position:relative;z-index:1;max-width:1100px;width:100%;margin:0 auto}
+.hero-crumb{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.4rem;display:flex;align-items:center;gap:.5rem;opacity:0;animation:fadeUp .5s ease forwards}
+.hero-crumb a{color:var(--muted);text-decoration:none;transition:color .2s}.hero-crumb a:hover{color:var(--blue-l)}
+.hero-crumb-sep{color:var(--border2)}
+.lab-badge{display:inline-flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red-l);border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.07);padding:.3rem .85rem;border-radius:2px;margin-bottom:1.5rem;width:fit-content;opacity:0;animation:fadeUp .5s ease forwards .05s}
+.lab-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--red-l)}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(2.8rem,6vw,5.5rem);line-height:.92;color:var(--white);letter-spacing:-.01em;opacity:0;animation:fadeUp .6s ease forwards .1s}
+.hero-title em{color:var(--red-l);font-style:normal}
+.hero-sub{margin-top:1.2rem;max-width:640px;font-size:.97rem;color:var(--muted);font-weight:300;line-height:1.8;opacity:0;animation:fadeUp .6s ease forwards .18s}
+.hero-sub strong{color:var(--text);font-weight:500}
+.hero-meta-row{display:flex;flex-wrap:wrap;gap:1.8rem;margin-top:2rem;padding-top:1.8rem;border-top:1px solid var(--border);opacity:0;animation:fadeUp .6s ease forwards .28s}
+.hm-item{display:flex;flex-direction:column;gap:.2rem}
+.hm-label{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.hm-val{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text)}
+.hm-val.red{color:var(--red-l)}.hm-val.green{color:var(--green)}.hm-val.amber{color:var(--amber)}.hm-val.blue{color:var(--blue-l)}
+
+/* CVE CALLOUT */
+.cve-box{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-left:3px solid var(--red);border-radius:4px;padding:1.4rem 1.6rem;margin-bottom:2rem}
+.cve-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--red-l);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem}
+.cve-id{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.8rem;color:var(--white);margin-bottom:.3rem}
+.cve-score{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--red-l);margin-bottom:.6rem}
+.cve-desc{font-size:.85rem;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* PHASE CARDS */
+.phases-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem}
+.phase-card{background:var(--bg3);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:transform .25s,border-color .25s}
+.phase-card:hover{transform:translateY(-3px);border-color:var(--border2)}
+.phase-top{height:3px}
+.pt-blue{background:var(--blue)}.pt-green{background:var(--green)}.pt-amber{background:var(--amber)}.pt-red{background:var(--red)}
+.phase-body{padding:1.4rem}
+.phase-num{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+.phase-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.3rem;color:var(--white);margin-bottom:.6rem}
+.phase-pts{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--amber);margin-bottom:.8rem}
+.phase-list{list-style:none;display:flex;flex-direction:column;gap:.45rem}
+.phase-list li{font-size:.83rem;color:var(--muted);font-weight:300;display:flex;align-items:flex-start;gap:.5rem;line-height:1.55}
+.phase-list li::before{content:'>';font-family:'JetBrains Mono',monospace;color:var(--dim);font-size:.7rem;margin-top:.1rem;flex-shrink:0}
+.phase-status{display:inline-flex;align-items:center;gap:.35rem;font-family:'JetBrains Mono',monospace;font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .55rem;border-radius:2px;margin-top:.9rem}
+.ps-complete{color:var(--green);background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)}
+.ps-pending{color:var(--amber);background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2)}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:2rem}
+.timeline::before{content:'';position:absolute;left:0;top:.5rem;bottom:0;width:2px;background:linear-gradient(180deg,var(--red) 0%,var(--border2) 100%)}
+.tl-entry{position:relative;margin-bottom:2rem;padding-left:1.6rem}
+.tl-entry::before{content:'';position:absolute;left:-2.4rem;top:.45rem;width:8px;height:8px;border-radius:50%;background:var(--border2);border:2px solid var(--border2)}
+.tl-entry.tl-breach::before{background:var(--red);border-color:var(--red);box-shadow:0 0 10px rgba(239,68,68,.4)}
+.tl-entry.tl-done::before{background:var(--green);border-color:var(--green)}
+.tl-time{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.08em;margin-bottom:.2rem}
+.tl-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;color:var(--white);margin-bottom:.3rem}
+.tl-entry.tl-breach .tl-title{color:var(--red-l)}
+.tl-desc{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.6}
+.tl-code{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text);background:var(--bg4);border:1px solid var(--border);border-radius:3px;padding:.5rem .8rem;margin-top:.5rem;display:inline-block}
+
+/* TOOLS TABLE */
+.tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.tool-card{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1.2rem 1.4rem;transition:border-color .2s,transform .2s}
+.tool-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.tool-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;color:var(--white);margin-bottom:.3rem}
+.tool-use{font-size:.8rem;color:var(--muted);font-weight:300;line-height:1.55}
+.tool-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.5rem;padding:.12rem .4rem;border-radius:2px;margin-top:.5rem}
+.tt-blue{color:var(--blue-l);background:rgba(45,126,246,.08);border:1px solid rgba(45,126,246,.2)}
+.tt-green{color:var(--green);background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2)}
+.tt-amber{color:var(--amber);background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2)}
+.tt-red{color:var(--red-l);background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2)}
+
+/* FINDINGS TABLE */
+.findings-table{width:100%;border-collapse:collapse}
+.findings-table th{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;text-align:left;padding:.7rem 1rem;border-bottom:1px solid var(--border2);white-space:nowrap}
+.findings-table td{font-size:.82rem;color:var(--muted);padding:.7rem 1rem;border-bottom:1px solid var(--border)}
+.findings-table td:first-child{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text)}
+.findings-table tr:hover td{background:rgba(255,255,255,.02)}
+.sev-badge{font-family:'JetBrains Mono',monospace;font-size:.55rem;padding:.15rem .45rem;border-radius:2px;font-weight:500}
+.sev-crit{color:var(--red-l);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25)}
+.sev-high{color:var(--amber);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)}
+.sev-med{color:var(--blue-l);background:rgba(45,126,246,.08);border:1px solid rgba(45,126,246,.2)}
+.sev-close{color:var(--green);background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)}
+.sev-open{color:var(--amber);background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2)}
+
+/* AI INTEGRATION */
+.ai-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.ai-card{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:4px;padding:1.2rem 1.4rem}
+.ai-task{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--blue-l);letter-spacing:.06em;margin-bottom:.3rem}
+.ai-output{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.6;margin-bottom:.5rem}
+.ai-verify{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--green)}
+
+/* EVIDENCE SUMMARY */
+.evidence-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.ev-card{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1.2rem;text-align:center}
+.ev-n{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.8rem;line-height:1;margin-bottom:.3rem}
+.ev-l{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;line-height:1.5}
+
+/* TAKEAWAYS */
+.takeaway-list{display:flex;flex-direction:column;gap:.85rem}
+.takeaway{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1.1rem 1.3rem;display:flex;gap:1rem;align-items:flex-start}
+.tk-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.8rem;color:var(--border2);line-height:1;flex-shrink:0;min-width:2rem}
+.tk-body{}
+.tk-head{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;color:var(--white);margin-bottom:.25rem;letter-spacing:.01em}
+.tk-text{font-size:.83rem;color:var(--muted);font-weight:300;line-height:1.6}
+
+/* BOTTOM CTA */
+.cta-section{padding:4rem 3.5rem;text-align:center;position:relative;z-index:1}
+.cta-inner{max-width:640px;margin:0 auto}
+.cta-label{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:1rem}
+.cta-heading{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.6rem;color:var(--white);line-height:1;margin-bottom:1.2rem}
+.cta-links{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.4rem}
+.btn-primary{display:inline-flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;background:var(--blue);color:#fff;padding:.75rem 1.6rem;text-decoration:none;border-radius:2px;transition:background .2s,transform .2s}
+.btn-primary:hover{background:var(--blue-d);transform:translateY(-2px)}
+.btn-outline{display:inline-flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text);border:1px solid var(--border2);padding:.75rem 1.6rem;text-decoration:none;border-radius:2px;transition:border-color .2s,color .2s,transform .2s}
+.btn-outline:hover{border-color:var(--blue-l);color:var(--blue-l);transform:translateY(-2px)}
+
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:1.5rem 3.5rem;display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);position:relative;z-index:1}
+footer span{color:var(--text)}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  nav{padding:0 1.5rem}
+  section{padding:4rem 1.5rem}
+  #hero{padding:6rem 1.5rem 3rem}
+  .phases-grid,.tools-grid,.ai-grid{grid-template-columns:1fr}
+  .evidence-grid{grid-template-columns:repeat(2,1fr)}
+  .findings-table{font-size:.78rem}
+  footer{padding:1.5rem;flex-direction:column;gap:.5rem;text-align:center}
+}
+@media(max-width:600px){
+  .evidence-grid{grid-template-columns:1fr}
+  .hero-title{font-size:2.6rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">
+    <span class="nav-dot"></span>
+    CHRISTOPHER HAM
+  </a>
+  <a href="index.html#projects" class="nav-back">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Labs
+  </a>
+  <a href="Ham_Christopher_Resume_PS.docx" class="nav-cta" target="_blank">Resume</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-crumb">
+      <a href="index.html">Portfolio</a>
+      <span class="hero-crumb-sep">/</span>
+      <a href="index.html#projects">Labs</a>
+      <span class="hero-crumb-sep">/</span>
+      <span>Capstone</span>
+    </div>
+    <div class="lab-badge"><span class="lab-badge-dot"></span>Per Scholas · CAP 195.2.1</div>
+    <h1 class="hero-title">THE LEGACY<br>SERVER <em>BREACH</em></h1>
+    <p class="hero-sub">
+      Full SOC simulation — <strong>CVE-2011-2523 exploited to root</strong> on a legacy Ubuntu server running Linux 2.6.X.
+      Executed all five NIST SP 800-61 incident response phases: lab setup, threat detection, containment,
+      eradication, and executive reporting. AI used as a force multiplier with a strict manual verification mandate.
+    </p>
+    <div class="hero-meta-row">
+      <div class="hm-item"><div class="hm-label">Incident ID</div><div class="hm-val">INC-2026-001</div></div>
+      <div class="hm-item"><div class="hm-label">Date</div><div class="hm-val">2026-05-27/28</div></div>
+      <div class="hm-item"><div class="hm-label">Primary CVE</div><div class="hm-val red">CVE-2011-2523 · CVSS 9.8</div></div>
+      <div class="hm-item"><div class="hm-label">Privileges</div><div class="hm-val red">uid=0(root)</div></div>
+      <div class="hm-item"><div class="hm-label">Phases Complete</div><div class="hm-val green">1 – 4 of 5</div></div>
+      <div class="hm-item"><div class="hm-label">Total Points</div><div class="hm-val amber">500</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CVE -->
+<section class="s-alt">
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 01</div>
+      <div class="s-title">Primary Vulnerability</div>
+      <div class="s-line"></div>
+    </div>
+    <div class="cve-box reveal">
+      <div class="cve-label">Critical · Exploited · Eradicated</div>
+      <div class="cve-id">CVE-2011-2523 &mdash; vsftpd 2.3.4 Backdoor</div>
+      <div class="cve-score">CVSS 9.8 &nbsp;·&nbsp; Network &nbsp;·&nbsp; No Auth Required &nbsp;·&nbsp; No User Interaction</div>
+      <div class="cve-desc">
+        A backdoor was intentionally planted in vsftpd 2.3.4 in June 2011. Sending a username containing
+        <code style="font-family:JetBrains Mono,monospace;font-size:.8em;color:var(--red-l)">:)</code> during FTP authentication
+        opens a root shell on TCP port 6200 with no authentication required. The binary on this server was
+        installed from source with no package manager record — itself an IOC indicating deliberate backdoor deployment
+        outside standard software management.
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem" class="reveal">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1.2rem">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Exploit Module</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text)">exploit/unix/ftp/vsftpd_234_backdoor</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1.2rem">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Session Obtained</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--red-l)">uid=0(root) gid=0(root)</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1.2rem">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Session Time</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text)">2026-05-28 08:32:07 -0400</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASES -->
+<section>
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 02</div>
+      <div class="s-title">Incident Response Phases</div>
+      <div class="s-line"></div>
+    </div>
+    <div class="phases-grid">
+
+      <div class="phase-card reveal">
+        <div class="phase-top pt-blue"></div>
+        <div class="phase-body">
+          <div class="phase-num">Phase 1</div>
+          <div class="phase-name">Lab Environment Setup</div>
+          <div class="phase-pts">50 pts</div>
+          <ul class="phase-list">
+            <li>Imported legacyserver.ova and Kali Linux.ova into VirtualBox</li>
+            <li>Configured Host-Only adapter (vboxnet0 · 192.168.56.0/24) — isolated from production</li>
+            <li>legacyserver 192.168.56.101 · Kali 192.168.56.102 · Account: sysadmin</li>
+            <li>Verified 0% packet loss connectivity and took clean forensic baseline snapshot</li>
+          </ul>
+          <div class="phase-status ps-complete">&#x2713; Complete</div>
+        </div>
+      </div>
+
+      <div class="phase-card reveal reveal-d1">
+        <div class="phase-top pt-red"></div>
+        <div class="phase-body">
+          <div class="phase-num">Phase 2</div>
+          <div class="phase-name">Detect &amp; Analyze</div>
+          <div class="phase-pts">125 pts</div>
+          <ul class="phase-list">
+            <li>Nmap full scan — 20+ open ports, vsftpd 2.3.4, Samba 3.0.20, UnrealIRCd, Tomcat 5.5</li>
+            <li>Netcat banner grab confirmed port 21 open — manual verification mandate satisfied</li>
+            <li>Wireshark live capture decoded FTP traffic on eth0</li>
+            <li>CVE-2011-2523 exploited — uid=0(root) shell obtained on port 6200 at 08:32:07</li>
+            <li>Auth.log IOC analysis from root shell — failed logins, suspicious localhost SSH auth</li>
+          </ul>
+          <div class="phase-status ps-complete">&#x2713; Complete</div>
+        </div>
+      </div>
+
+      <div class="phase-card reveal">
+        <div class="phase-top pt-amber"></div>
+        <div class="phase-body">
+          <div class="phase-num">Phase 3</div>
+          <div class="phase-name">Contain</div>
+          <div class="phase-pts">75 pts</div>
+          <ul class="phase-list">
+            <li>iptables default-deny on all chains — OUTPUT blocked 303 pkts / 87,248 bytes</li>
+            <li>netstat documented active backdoor session 192.168.56.101:6200 ESTABLISHED as evidence</li>
+            <li>4 forensic files preserved — auth.log, syslog, netstat, process list (total: 819KB)</li>
+            <li>Post-containment VirtualBox snapshot taken — compromised state locked in before eradication</li>
+          </ul>
+          <div class="phase-status ps-complete">&#x2713; Complete</div>
+        </div>
+      </div>
+
+      <div class="phase-card reveal reveal-d1">
+        <div class="phase-top pt-green"></div>
+        <div class="phase-body">
+          <div class="phase-num">Phase 4</div>
+          <div class="phase-name">Eradicate &amp; Recover</div>
+          <div class="phase-pts">125 pts</div>
+          <ul class="phase-list">
+            <li>vsftpd not in package manager — source-compiled binary IOC. Located in xinetd, not systemd</li>
+            <li>Removed /etc/xinetd.d/vsftpd config, restarted xinetd, deleted /usr/sbin/vsftpd binary</li>
+            <li>SSH hardened — PermitRootLogin no, PasswordAuthentication no (uncommented)</li>
+            <li>Post-hardening Nmap confirmed port 21 and 6200 both closed</li>
+          </ul>
+          <div class="phase-status ps-complete">&#x2713; Complete</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ATTACK TIMELINE -->
+<section class="s-alt">
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 03</div>
+      <div class="s-title">Attack Chain &amp; Timeline</div>
+      <div class="s-line"></div>
+    </div>
+    <div class="timeline">
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-27 · 20:22</div>
+        <div class="tl-title">Lab Isolated</div>
+        <div class="tl-desc">Both VMs on Host-Only vboxnet0. legacyserver: 192.168.56.101. Kali: 192.168.56.102. Forensic baseline snapshot taken. Zero external network exposure.</div>
+      </div>
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-27 · 20:51</div>
+        <div class="tl-title">Attack Surface Mapped — 20+ Open Ports</div>
+        <div class="tl-desc">Nmap -sV -sC -O -p- completed in 169.61 seconds. OS: Linux 2.6.9-2.6.33 (EOL 2011). Four Critical CVEs identified. Samba anonymous access confirmed. SMB signing disabled.</div>
+        <div class="tl-code">nmap -sV -sC -O -p- --open 192.168.56.101</div>
+      </div>
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-28 · 08:17</div>
+        <div class="tl-title">vsftpd 2.3.4 Manually Confirmed</div>
+        <div class="tl-desc">Netcat banner grab returned "220 Welcome to LegacyServer FTP service." Manual verification mandate for AI-identified CVE-2011-2523 satisfied.</div>
+        <div class="tl-code">nc -nv 192.168.56.101 21</div>
+      </div>
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-28 · 08:26</div>
+        <div class="tl-title">FTP Traffic Captured in Wireshark</div>
+        <div class="tl-desc">Live capture on eth0. File Transfer Protocol layer decoded in packet detail pane. FTP and TCP packets visible between both machines.</div>
+      </div>
+
+      <div class="tl-entry tl-breach reveal">
+        <div class="tl-time">2026-05-28 · 08:32:07</div>
+        <div class="tl-title">BREACH CONFIRMED — Root Shell Obtained</div>
+        <div class="tl-desc">CVE-2011-2523 backdoor triggered. Shell spawned on port 6200 — uid=0(root) gid=0(root). Session: 192.168.56.102:34095 → 192.168.56.101:6200.</div>
+        <div class="tl-code">uid=0(root) gid=0(root)</div>
+      </div>
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-28 · 08:36</div>
+        <div class="tl-title">IOCs Confirmed in Auth.Log</div>
+        <div class="tl-desc">From root shell: FAILED LOGIN on tty1 for UNKNOWN (repeated). sshd[4794] Accepted password for sysadmin from 127.0.0.1 — suspicious local SSH auth. SSH bind errors spanning Dec 2025 through May 2026.</div>
+      </div>
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-28 · 09:33</div>
+        <div class="tl-title">Contained — iptables Default-Deny Applied</div>
+        <div class="tl-desc">INPUT/FORWARD/OUTPUT all set to DROP. OUTPUT chain blocked 303 packets / 87,248 bytes. 4 forensic files preserved. Post-containment snapshot taken.</div>
+      </div>
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-28 · 13:46</div>
+        <div class="tl-title">vsftpd Eradicated — Port 21 Closed</div>
+        <div class="tl-desc">Binary found at /usr/sbin/vsftpd, managed by xinetd (not apt). Removed xinetd config, restarted xinetd, deleted binary. Port 21 confirmed closed via netstat.</div>
+      </div>
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-28 · 13:54</div>
+        <div class="tl-title">SSH Hardened</div>
+        <div class="tl-desc">PermitRootLogin no and PasswordAuthentication no set in sshd_config. Line uncommented — not just added. Restarted via /etc/init.d/ssh [OK].</div>
+      </div>
+
+      <div class="tl-entry tl-done reveal">
+        <div class="tl-time">2026-05-28 · 14:00</div>
+        <div class="tl-title">Post-Hardening Nmap — Primary Objective Confirmed</div>
+        <div class="tl-desc">Ports 21 and 6200 both absent from scan results. SSH (22) still open — expected and now hardened. Telnet, Samba, UnrealIRCd remain — documented as follow-on hardening items.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FINDINGS TABLE -->
+<section>
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 04</div>
+      <div class="s-title">Vulnerabilities Identified</div>
+      <div class="s-line"></div>
+    </div>
+    <div style="overflow-x:auto" class="reveal">
+      <table class="findings-table">
+        <thead>
+          <tr>
+            <th>Port</th><th>Service</th><th>CVE</th><th>CVSS</th><th>Severity</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>21</td><td>vsftpd 2.3.4</td><td>CVE-2011-2523</td><td>9.8</td><td><span class="sev-badge sev-crit">Critical</span></td><td><span class="sev-badge sev-close">Eradicated</span></td></tr>
+          <tr><td>6200</td><td>vsftpd backdoor shell</td><td>CVE-2011-2523</td><td>9.8</td><td><span class="sev-badge sev-crit">Critical</span></td><td><span class="sev-badge sev-close">Closed</span></td></tr>
+          <tr><td>445</td><td>Samba 3.0.20-Debian</td><td>CVE-2007-2447</td><td>9.3</td><td><span class="sev-badge sev-crit">Critical</span></td><td><span class="sev-badge sev-open">Open — Follow-on</span></td></tr>
+          <tr><td>6667</td><td>UnrealIRCd 3.2.8.1</td><td>CVE-2010-2075</td><td>9.8</td><td><span class="sev-badge sev-crit">Critical</span></td><td><span class="sev-badge sev-open">Open — Follow-on</span></td></tr>
+          <tr><td>23</td><td>Telnet</td><td>N/A</td><td>—</td><td><span class="sev-badge sev-high">High</span></td><td><span class="sev-badge sev-open">Open — Follow-on</span></td></tr>
+          <tr><td>8009</td><td>Apache Jserv 1.3</td><td>CVE-2020-1938</td><td>9.8</td><td><span class="sev-badge sev-crit">Critical</span></td><td><span class="sev-badge sev-open">Open — Follow-on</span></td></tr>
+          <tr><td>8180</td><td>Apache Tomcat 5.5</td><td>Multiple</td><td>—</td><td><span class="sev-badge sev-high">High</span></td><td><span class="sev-badge sev-open">Open — Follow-on</span></td></tr>
+          <tr><td>22</td><td>OpenSSH</td><td>CVE-2008-0166</td><td>7.8</td><td><span class="sev-badge sev-high">High</span></td><td><span class="sev-badge sev-close">Hardened</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- EVIDENCE SUMMARY -->
+<section class="s-alt">
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 05</div>
+      <div class="s-title">Evidence Collected</div>
+      <div class="s-line"></div>
+    </div>
+    <div class="evidence-grid">
+      <div class="ev-card reveal">
+        <div class="ev-n" style="color:var(--blue-l)">18</div>
+        <div class="ev-l">Screenshots<br>Across 4 Phases</div>
+      </div>
+      <div class="ev-card reveal reveal-d1">
+        <div class="ev-n" style="color:var(--amber)">4</div>
+        <div class="ev-l">Forensic Files<br>Preserved (819KB)</div>
+      </div>
+      <div class="ev-card reveal reveal-d2">
+        <div class="ev-n" style="color:var(--red-l)">3</div>
+        <div class="ev-l">Auth.Log IOCs<br>Confirmed</div>
+      </div>
+      <div class="ev-card reveal reveal-d3">
+        <div class="ev-n" style="color:var(--green)">2</div>
+        <div class="ev-l">VirtualBox Snapshots<br>Taken</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI INTEGRATION -->
+<section>
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 06</div>
+      <div class="s-title">AI Integration — Manual Verification Record</div>
+      <div class="s-line"></div>
+    </div>
+    <p class="reveal" style="font-size:.85rem;color:var(--muted);font-weight:300;line-height:1.7;max-width:680px;margin-bottom:1.6rem">Per the Rules of Engagement, AI (Claude) was used as a junior analyst — it generated leads, I verified every one manually before documenting it. No AI output was accepted without a screenshot of the confirming tool.</p>
+    <div class="ai-grid">
+      <div class="ai-card reveal">
+        <div class="ai-task">// Parse Nmap Output</div>
+        <div class="ai-output">CVE table ranked by CVSS. CVE-2011-2523, CVE-2007-2447, CVE-2010-2075 all flagged Critical.</div>
+        <div class="ai-verify">&#x2713; Verified via Netcat banner grab on port 21</div>
+      </div>
+      <div class="ai-card reveal reveal-d1">
+        <div class="ai-task">// Auth.Log IOC Analysis</div>
+        <div class="ai-output">3 IOC categories: failed logins, suspicious localhost SSH auth, persistent SSH bind error pattern.</div>
+        <div class="ai-verify">&#x2713; Verified by reviewing raw log directly in root shell</div>
+      </div>
+      <div class="ai-card reveal">
+        <div class="ai-task">// Containment Runbook</div>
+        <div class="ai-output">iptables commands, evidence preservation list, kill procedure.</div>
+        <div class="ai-verify">&#x2713; Verified — each command run individually, output captured</div>
+      </div>
+      <div class="ai-card reveal reveal-d1">
+        <div class="ai-task">// Eradication Guidance</div>
+        <div class="ai-output">Identified xinetd as service manager, provided removal sequence for source-compiled vsftpd.</div>
+        <div class="ai-verify">&#x2713; Verified via find, binary removal, netstat post-deletion</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section class="s-alt">
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 07</div>
+      <div class="s-title">Tools Used</div>
+      <div class="s-line"></div>
+    </div>
+    <div class="tools-grid">
+      <div class="tool-card reveal">
+        <div class="tool-name">Nmap 7.95</div>
+        <div class="tool-use">Full port and service version enumeration, OS fingerprinting, NSE scripts for SMB analysis</div>
+        <span class="tool-tag tt-blue">Enumeration</span>
+      </div>
+      <div class="tool-card reveal reveal-d1">
+        <div class="tool-name">Metasploit v6.4.99</div>
+        <div class="tool-use">exploit/unix/ftp/vsftpd_234_backdoor — controlled exploitation of CVE-2011-2523</div>
+        <span class="tool-tag tt-red">Exploitation</span>
+      </div>
+      <div class="tool-card reveal reveal-d2">
+        <div class="tool-name">Wireshark</div>
+        <div class="tool-use">Live packet capture on eth0. FTP traffic decoded. TCP handshake and FTP protocol visible.</div>
+        <span class="tool-tag tt-blue">Traffic Analysis</span>
+      </div>
+      <div class="tool-card reveal">
+        <div class="tool-name">Netcat</div>
+        <div class="tool-use">Manual banner grab confirming vsftpd 2.3.4 on port 21 — satisfies AI verification mandate</div>
+        <span class="tool-tag tt-green">Verification</span>
+      </div>
+      <div class="tool-card reveal reveal-d1">
+        <div class="tool-name">iptables</div>
+        <div class="tool-use">Default-deny containment policy. OUTPUT dropped 303 pkts / 87KB. ACCEPT for analyst IP only.</div>
+        <span class="tool-tag tt-amber">Containment</span>
+      </div>
+      <div class="tool-card reveal reveal-d2">
+        <div class="tool-name">Linux CLI</div>
+        <div class="tool-use">Log analysis, forensic preservation, xinetd service management, sshd_config hardening</div>
+        <span class="tool-tag tt-green">Hardening</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TAKEAWAYS -->
+<section>
+  <div class="inner">
+    <div class="s-head reveal">
+      <div class="s-num">// 08</div>
+      <div class="s-title">Key Takeaways</div>
+      <div class="s-line"></div>
+    </div>
+    <div class="takeaway-list">
+      <div class="takeaway reveal">
+        <div class="tk-num">01</div>
+        <div class="tk-body">
+          <div class="tk-head">Source-compiled malware bypasses package managers</div>
+          <div class="tk-text">apt-get said vsftpd was not installed — because it wasn't installed through apt. The backdoored binary lived in /usr/sbin and was managed by xinetd. File integrity monitoring (AIDE, Tripwire) would catch this regardless of installation method. Package manager evidence is a starting point, not a conclusion.</div>
+        </div>
+      </div>
+      <div class="takeaway reveal">
+        <div class="tk-num">02</div>
+        <div class="tk-body">
+          <div class="tk-head">IOCs sat in auth.log for months before detection</div>
+          <div class="tk-text">Failed logins and SSH daemon bind errors from December 2025 through May 2026 were present in the logs the entire time. A SIEM with real-time log ingestion and alerting on authentication anomalies would have fired on day one. The NOC caught this via traffic spikes — the last line of defense, not the first.</div>
+        </div>
+      </div>
+      <div class="takeaway reveal">
+        <div class="tk-num">03</div>
+        <div class="tk-body">
+          <div class="tk-head">Old systems use old service managers</div>
+          <div class="tk-text">Linux 2.6.X does not have systemctl or the service command. Containment and eradication commands that work on modern Ubuntu break on this system. Always check /etc/xinetd.d/ and /etc/inetd.conf on legacy targets when standard service management fails. Know the environment before you act.</div>
+        </div>
+      </div>
+      <div class="takeaway reveal">
+        <div class="tk-num">04</div>
+        <div class="tk-body">
+          <div class="tk-head">Four Critical CVEs, one decade-old server</div>
+          <div class="tk-text">CVE-2011-2523 (2011), CVE-2007-2447 (2007), CVE-2010-2075 (2010), CVE-2020-1938. All publicly known. All still live. Weekly vulnerability scanning with CVSS 7.0+ alerting catches every one of these automatically. The cost of not scanning is this engagement.</div>
+        </div>
+      </div>
+      <div class="takeaway reveal">
+        <div class="tk-num">05</div>
+        <div class="tk-body">
+          <div class="tk-head">AI is a speed multiplier — not a replacement for tools</div>
+          <div class="tk-text">Parsing a 170-second Nmap output for CVEs took seconds with AI. But the Metasploit session, the Wireshark decode, the auth.log review, and the netstat post-removal check are what made those findings real and submittable. AI generates the lead. The tool closes it. That order matters.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<div class="cta-section">
+  <div class="cta-inner reveal">
+    <div class="cta-label">Per Scholas NC · CAP 195.2.1 · May 2026</div>
+    <div class="cta-heading">See the Full Lab Report</div>
+    <p style="font-size:.88rem;color:var(--muted);font-weight:300;line-height:1.7">Capstone Technical Report and Executive Summary available on request. 18 embedded screenshots across all 4 phases.</p>
+    <div class="cta-links">
+      <a href="index.html#projects" class="btn-primary">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        All Lab Projects
+      </a>
+      <a href="https://github.com/cham252" class="btn-outline" target="_blank">GitHub</a>
+      <a href="https://linkedin.com/in/christopher-ham-cyber" class="btn-outline" target="_blank">LinkedIn</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div><span>Christopher Ham</span> &nbsp;·&nbsp; Durham, NC &nbsp;·&nbsp; SOC Analyst</div>
+  <div>Retired badge. Active labs. Always hunting.</div>
+</footer>
+
+<script>
+(function(){
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: .08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Forensics Lab — SQue Worldwide Realty Investigation | Christopher Ham</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1B2A;
+    --navy-mid: #132338;
+    --navy-light: #1B3050;
+    --steel: #2E75B6;
+    --steel-light: #4A90D9;
+    --steel-pale: #A8CBE8;
+    --accent: #00D4AA;
+    --accent-dim: #00A882;
+    --warn: #F59E0B;
+    --danger: #EF4444;
+    --text-primary: #E8F4FD;
+    --text-secondary: #8BAEC8;
+    --text-muted: #4A6A85;
+    --border: rgba(46, 117, 182, 0.2);
+    --border-bright: rgba(46, 117, 182, 0.5);
+    --card-bg: rgba(19, 35, 56, 0.6);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--navy);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(46,117,182,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(46,117,182,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 24px 80px;
+  }
+
+  /* ── HEADER ── */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    margin-bottom: 48px;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--steel-light); }
+  .back-link::before { content: '←'; }
+
+  .lab-header { margin-bottom: 56px; }
+
+  .lab-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,212,170,0.3);
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  .lab-tag::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  h1 span { color: var(--steel-light); }
+
+  .lab-subtitle {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 620px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .meta-item {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+  .meta-item strong {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ── CASE INFO CARD ── */
+  .case-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-bright);
+    border-left: 3px solid var(--steel);
+    border-radius: 4px;
+    padding: 28px 32px;
+    margin-bottom: 48px;
+    backdrop-filter: blur(4px);
+  }
+  .case-card-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--steel-light);
+    margin-bottom: 16px;
+  }
+  .case-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 40px;
+  }
+  @media (max-width: 600px) { .case-grid { grid-template-columns: 1fr; } }
+  .case-field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .case-field p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  /* ── SECTION HEADINGS ── */
+  .section {
+    margin-bottom: 56px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    min-width: 32px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--steel-pale);
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--steel-pale);
+    margin-bottom: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    font-weight: 300;
+  }
+
+  /* ── METHODOLOGY STEPS ── */
+  .steps-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .step-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: border-color 0.2s;
+  }
+  .step-item:hover { border-color: var(--border-bright); }
+  .step-num {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 600;
+    color: rgba(46,117,182,0.25);
+    min-width: 36px;
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .step-content h3 { margin-bottom: 6px; }
+  .step-content p { margin-bottom: 0; font-size: 14px; }
+
+  /* ── EVIDENCE AREAS ── */
+  .evidence-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .evidence-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .evidence-card:hover {
+    border-color: var(--border-bright);
+    background: rgba(19,35,56,0.9);
+  }
+  .ev-icon {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .ev-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  .ev-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  /* ── WORKFLOW PIPELINE ── */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .pipeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 24px;
+    bottom: 24px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--steel), transparent);
+  }
+  .pipeline-step {
+    display: flex;
+    gap: 20px;
+    padding: 16px 0 16px 0;
+    position: relative;
+  }
+  .pipeline-dot {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    background: var(--navy-mid);
+    border: 1px solid var(--steel);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--steel-light);
+    position: relative;
+    z-index: 1;
+  }
+  .pipeline-content {
+    padding-top: 8px;
+    flex: 1;
+  }
+  .pipeline-content h3 {
+    font-size: 15px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .pipeline-content p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 0;
+  }
+
+  /* ── TOOLS USED ── */
+  .tools-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .tool-badge {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 5px 12px;
+    border: 1px solid var(--border-bright);
+    color: var(--steel-pale);
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+    background: rgba(46,117,182,0.07);
+  }
+
+  /* ── FINDINGS PLACEHOLDER ── */
+  .findings-note {
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-left: 3px solid var(--warn);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-top: 20px;
+  }
+  .findings-note p {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: rgba(245, 158, 11, 0.8);
+    margin-bottom: 0;
+  }
+
+  /* ── SKILLS TAGS ── */
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .skill-tag {
+    font-size: 13px;
+    padding: 5px 14px;
+    background: rgba(0, 212, 170, 0.07);
+    border: 1px solid rgba(0, 212, 170, 0.2);
+    border-radius: 2px;
+    color: var(--accent-dim);
+    font-weight: 400;
+  }
+
+  /* ── FRAMEWORKS ── */
+  .framework-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .framework-card {
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+    border-radius: 4px;
+    background: var(--card-bg);
+  }
+  .framework-card .fw-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--steel-light);
+    margin-bottom: 4px;
+    letter-spacing: 0.06em;
+  }
+  .framework-card .fw-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── FOOTER ── */
+  .lab-footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .footer-id {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    line-height: 1.8;
+  }
+  .footer-links {
+    display: flex;
+    gap: 20px;
+  }
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--steel-light); }
+
+  /* ── CHAIN OF CUSTODY BAR ── */
+  .coc-bar {
+    background: rgba(46,117,182,0.08);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 48px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .coc-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .coc-label {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .coc-value { color: var(--steel-pale); }
+  .coc-value.mono { color: var(--accent); font-size: 11px; }
+
+  /* ── HASH BLOCK ── */
+  .hash-block {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 20px;
+    margin-top: 12px;
+  }
+  .hash-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+  }
+  .hash-value {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    word-break: break-all;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <a class="back-link" href="https://cham252.github.io">Back to portfolio</a>
+
+  <!-- ── HEADER ── -->
+  <header class="lab-header">
+    <div class="lab-tag">Digital Forensics Lab</div>
+    <h1>SQue Worldwide Realty<br><span>Endpoint Forensic Examination</span></h1>
+    <p class="lab-subtitle">
+      A full forensic examination of a corporate endpoint belonging to employees Jimmy Wilson and
+      Billy Bob, using Autopsy to analyze an E01 disk image and present findings to the organization's
+      HR department.
+    </p>
+    <div class="meta-row">
+      <span class="meta-item"><strong>Tool:</strong> Autopsy Forensic Suite</span>
+      <span class="meta-item"><strong>Image:</strong> 2020JimmyWilson.E01</span>
+      <span class="meta-item"><strong>Environment:</strong> Windows 11 VM / ProxMox</span>
+      <span class="meta-item"><strong>Program:</strong> UofL Digital Transformation Center — Cybersecurity Workforce Program</span>
+      <span class="meta-item"><strong>Date:</strong> June 2026</span>
+    </div>
+  </header>
+
+  <!-- ── CHAIN OF CUSTODY BAR ── -->
+  <div class="coc-bar">
+    <div class="coc-item">
+      <span class="coc-label">Case Number</span>
+      <span class="coc-value">CHam-SQWR-2026-001</span>
+    </div>
+    <div class="coc-item">
+      <span class="coc-label">Evidence File</span>
+      <span class="coc-value mono">2020JimmyWilson.E01</span>
+    </div>
+    <div class="coc-item">
+      <span class="coc-label">Examiner</span>
+      <span class="coc-value">Christopher Ham, CEH | CISM | Security+</span>
+    </div>
+    <div class="coc-item">
+      <span class="coc-label">Classification</span>
+      <span class="coc-value">HR Investigation — Internal</span>
+    </div>
+    <div class="coc-item">
+      <span class="coc-label">Status</span>
+      <span class="coc-value mono">Completed</span>
+    </div>
+  </div>
+
+  <!-- ── SECTION 1: SCENARIO ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Case Background</span>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="case-card">
+      <div class="case-card-title">Case Summary — SQue Worldwide Realty, Inc.</div>
+      <div class="case-grid">
+        <div class="case-field">
+          <label>Subject Employees</label>
+          <p>Jimmy Wilson and Billy Bob (shared workstation)</p>
+        </div>
+        <div class="case-field">
+          <label>Organization</label>
+          <p>SQue Worldwide Realty, Inc.</p>
+        </div>
+        <div class="case-field">
+          <label>Triggering Event</label>
+          <p>IT department discovered disturbing items during routine maintenance</p>
+        </div>
+        <div class="case-field">
+          <label>Referred To</label>
+          <p>Digital Forensics Examiner for HR presentation</p>
+        </div>
+        <div class="case-field">
+          <label>Examiner Role</label>
+          <p>Organization's designated digital forensics examiner</p>
+        </div>
+        <div class="case-field">
+          <label>Final Deliverable</label>
+          <p>Forensic report delivered to HR department</p>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      Jimmy Wilson and Billy Bob are lower-level realtors at SQue Worldwide Realty who share a
+      corporate workstation. During a routine IT maintenance cycle, personnel discovered potentially
+      disturbing items and files on the device. The machine was turned over to the digital forensics
+      team for examination. This lab documents the examination methodology, evidence recovered, and
+      findings presented to HR.
+    </p>
+  </section>
+
+  <!-- ── SECTION 2: METHODOLOGY ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Examination Methodology</span>
+      <div class="section-line"></div>
+    </div>
+
+    <p>
+      The examination followed a structured digital forensics workflow consistent with industry best
+      practices for corporate endpoint investigations. All steps were performed on a forensic copy
+      of the original evidence to preserve integrity.
+    </p>
+
+    <ul class="steps-list">
+      <li class="step-item">
+        <span class="step-num">01</span>
+        <div class="step-content">
+          <h3>Environment Setup</h3>
+          <p>Logged into ProxMox virtual infrastructure. Booted the Windows 11 VM containing the
+          Autopsy forensic toolkit. Confirmed VM integrity and access credentials prior to
+          starting examination.</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">02</span>
+        <div class="step-content">
+          <h3>Evidence Intake and Hashing</h3>
+          <p>Located 2020JimmyWilson.E01 in the Documents → Forensics folder. Documented file
+          name, path, file size, and creation timestamp prior to ingestion. Verified MD5 and
+          SHA-1 hash values upon Autopsy ingest to confirm evidence integrity.</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">03</span>
+        <div class="step-content">
+          <h3>Case Creation and Image Ingest</h3>
+          <p>Created a new case in Autopsy with examiner identification metadata. Added the E01
+          as the primary data source. Allowed full ingest to complete with all available ingest
+          modules active. Ingest duration: approximately 1 hour.</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">04</span>
+        <div class="step-content">
+          <h3>Systematic Evidence Examination</h3>
+          <p>Examined six key artifact categories in the Autopsy tree panel: images, documents
+          (HTML and Office), email messages, web history, web search, and OS accounts. Each
+          category was reviewed for evidence of wrongdoing by either subject.</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">05</span>
+        <div class="step-content">
+          <h3>Bookmarking and Evidence Tagging</h3>
+          <p>All items of forensic interest were bookmarked in Autopsy using appropriate
+          classification tags. Metadata captured for each item included: file name, full path,
+          created time, file size, and hash value.</p>
+        </div>
+      </li>
+      <li class="step-item">
+        <span class="step-num">06</span>
+        <div class="step-content">
+          <h3>Report Generation</h3>
+          <p>Generated the Autopsy HTML report from all bookmarked items. Supplemented with
+          the formal examiner report using the provided organizational template for HR
+          department presentation.</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ── SECTION 3: EVIDENCE AREAS ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Evidence Examination Areas</span>
+      <div class="section-line"></div>
+    </div>
+
+    <p>
+      Autopsy's automated ingest modules and manual review covered six artifact categories.
+      Each area was examined for evidence of policy violations, inappropriate content, or other
+      items of interest for the HR investigation.
+    </p>
+
+    <div class="evidence-grid">
+      <div class="evidence-card">
+        <div class="ev-icon">// 01</div>
+        <div class="ev-title">Images</div>
+        <div class="ev-desc">Reviewed all image files recovered from the filesystem including
+        deleted and carved items. Flagged any inappropriate, illegal, or policy-violating
+        visual content.</div>
+      </div>
+      <div class="evidence-card">
+        <div class="ev-icon">// 02</div>
+        <div class="ev-title">Documents</div>
+        <div class="ev-desc">Examined HTML files and Microsoft Office documents (.docx, .xlsx,
+        .pptx, .pdf) for sensitive or incriminating content, proprietary data, or external
+        communications.</div>
+      </div>
+      <div class="evidence-card">
+        <div class="ev-icon">// 03</div>
+        <div class="ev-title">Email Messages</div>
+        <div class="ev-desc">Analyzed email artifacts including locally stored messages, sent
+        items, and drafts. Identified communications between subjects and any external parties
+        relevant to the investigation.</div>
+      </div>
+      <div class="evidence-card">
+        <div class="ev-icon">// 04</div>
+        <div class="ev-title">Web History</div>
+        <div class="ev-desc">Reconstructed browser history from Chrome, Firefox, and Edge
+        artifacts. Documented visited URLs, timestamps, and frequency of access to flagged
+        domains.</div>
+      </div>
+      <div class="evidence-card">
+        <div class="ev-icon">// 05</div>
+        <div class="ev-title">Web Search</div>
+        <div class="ev-desc">Extracted search queries from browser artifacts and keyword
+        history. Identified search terms used by subjects that are relevant to the
+        investigation.</div>
+      </div>
+      <div class="evidence-card">
+        <div class="ev-icon">// 06</div>
+        <div class="ev-title">OS Accounts</div>
+        <div class="ev-desc">Examined Windows user account data including SAM registry,
+        login history, account creation dates, and privilege levels for all accounts
+        on the shared workstation.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 4: EXAMINATION PIPELINE ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Forensic Workflow</span>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-dot">A</div>
+        <div class="pipeline-content">
+          <h3>Acquire — Evidence Intake</h3>
+          <p>E01 image received from IT department. File size, location, and pre-ingest hash values
+          documented. Chain of custody established.</p>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-dot">B</div>
+        <div class="pipeline-content">
+          <h3>Preserve — Hash Verification</h3>
+          <p>MD5 and SHA-1 hashes generated at ingest and compared to confirm image integrity.
+          Forensic examination performed on Autopsy working copy only.</p>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-dot">C</div>
+        <div class="pipeline-content">
+          <h3>Analyze — Artifact Examination</h3>
+          <p>Six artifact categories systematically examined. Suspicious and relevant items
+          bookmarked with category tags. Screenshots taken with metadata visible.</p>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-dot">D</div>
+        <div class="pipeline-content">
+          <h3>Document — Report Generation</h3>
+          <p>Autopsy HTML report generated from all tagged items. Examiner report written using
+          organizational template. Findings structured for HR department audience.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 5: TOOLS & ENVIRONMENT ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Tools and Environment</span>
+      <div class="section-line"></div>
+    </div>
+
+    <h3>Forensic Platform</h3>
+    <p>All examination activities were conducted inside an isolated ProxMox virtual environment
+    to maintain forensic integrity and prevent contamination of the host system or network.</p>
+
+    <div class="tools-row">
+      <span class="tool-badge">Autopsy 4.x</span>
+      <span class="tool-badge">ProxMox VE</span>
+      <span class="tool-badge">Windows 11 VM</span>
+      <span class="tool-badge">E01 (Expert Witness Format)</span>
+      <span class="tool-badge">MD5 / SHA-1 Hashing</span>
+      <span class="tool-badge">Sleuth Kit</span>
+      <span class="tool-badge">Autopsy HTML Report Engine</span>
+    </div>
+
+    <div class="hash-block" style="margin-top:24px;">
+      <div class="hash-label">Evidence File</div>
+      <div class="hash-value">Documents\Forensics\2020JimmyWilson.E01</div>
+    </div>
+
+    <h3 style="margin-top:32px;">Applicable Frameworks and Standards</h3>
+    <div class="framework-row">
+      <div class="framework-card">
+        <div class="fw-name">NIST SP 800-86</div>
+        <div class="fw-desc">Guide to integrating forensic techniques into IR</div>
+      </div>
+      <div class="framework-card">
+        <div class="fw-name">NIST SP 800-61r2</div>
+        <div class="fw-desc">Computer security incident handling guide</div>
+      </div>
+      <div class="framework-card">
+        <div class="fw-name">RFC 3227</div>
+        <div class="fw-desc">Evidence collection and archiving guidelines</div>
+      </div>
+      <div class="framework-card">
+        <div class="fw-name">ACPO Guidelines</div>
+        <div class="fw-desc">Good practice guide for digital evidence</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 6: KEY SKILLS DEMONSTRATED ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title">Skills Demonstrated</span>
+      <div class="section-line"></div>
+    </div>
+
+    <p>
+      This lab demonstrates applied skills in digital forensics, evidence handling, and structured
+      reporting — directly applicable to DFIR, corporate investigations, and insider threat
+      analyst roles.
+    </p>
+
+    <div class="skills-grid">
+      <span class="skill-tag">Disk Image Forensics (E01)</span>
+      <span class="skill-tag">Autopsy Forensic Suite</span>
+      <span class="skill-tag">Evidence Intake and Chain of Custody</span>
+      <span class="skill-tag">Hash Verification (MD5 / SHA-1)</span>
+      <span class="skill-tag">Artifact Recovery — Images, Email, Browser</span>
+      <span class="skill-tag">OS Account Analysis</span>
+      <span class="skill-tag">Web History and Search Reconstruction</span>
+      <span class="skill-tag">Evidence Bookmarking and Classification</span>
+      <span class="skill-tag">Forensic Report Generation</span>
+      <span class="skill-tag">Technical Writing for Non-Technical Audiences</span>
+      <span class="skill-tag">Virtual Machine Forensic Environments</span>
+      <span class="skill-tag">NIST SP 800-86 Application</span>
+    </div>
+  </section>
+
+  <!-- ── SECTION 7: FINDINGS PLACEHOLDER ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title">Findings Summary</span>
+      <div class="section-line"></div>
+    </div>
+
+    <p>
+      The examination of the 2020JimmyWilson.E01 image produced a comprehensive set of forensic
+      findings across all six artifact categories. Bookmarked items were compiled into an Autopsy
+      HTML report and a formal examiner report for submission to the HR department.
+    </p>
+
+    <div class="findings-note">
+      <p>// Detailed findings, screenshots, and artifact metadata are contained in the
+      submitted Autopsy HTML report and examiner report per course assessment requirements.
+      Portfolio page documents methodology, tooling, and examination framework.</p>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="lab-footer">
+    <div class="footer-id">
+      Christopher Ham — Digital Forensics Examiner<br>
+      CEH · CISM · SecurityX · Security+ · ECIH EC-Council Incident Handler<br>
+      Splunk Core Certified User · CCNA · NCAE-C OSINT Specialist Investigator<br>
+      christopher.ham2@protonmail.com · Durham, NC
+    </div>
+    <nav class="footer-links">
+      <a href="https://cham252.github.io">Portfolio</a>
+      <a href="https://linkedin.com/in/christopher-ham-cyber">LinkedIn</a>
+      <a href="https://github.com/cham252">GitHub</a>
+    </nav>
+  </footer>
+
+</div>
+</body>
+</html>

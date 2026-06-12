@@ -463,7 +463,7 @@ footer span{color:var(--text)}
       <div class="hero-roles">SOC Analyst &nbsp;·&nbsp; Incident Response &nbsp;·&nbsp; Threat Intelligence</div>
 
       <p class="hero-pitch">
-        Cybersecurity professional with <strong>9 active certifications</strong>, a hands-on home SOC lab, and 25 years of evidence-based investigative work. Built enterprise vulnerability management programs from scratch, authored KQL threat hunts in Microsoft Defender, and completed full-stack SOC simulations end-to-end. <strong>Currently enrolled at Per Scholas NC and Thomas Edison State University (M.S. Cybersecurity).</strong>
+        Cybersecurity professional with <strong>11 active certifications</strong>, a hands-on home SOC lab, and 25 years of evidence-based investigative work. Built enterprise vulnerability management programs from scratch, authored KQL threat hunts in Microsoft Defender, executed full-stack SOC simulations, and ran a live ICS/SCADA Modbus coil write attack against a simulated water treatment PLC. <strong>Currently enrolled at Per Scholas NC and Thomas Edison State University (M.S. Cybersecurity).</strong>
       </p>
 
       <div class="hero-pills">
@@ -471,10 +471,13 @@ footer span{color:var(--text)}
         <span class="pill hot">CISM</span>
         <span class="pill hot">CEH</span>
         <span class="pill hot">Security+</span>
+        <span class="pill hot">CTIA</span>
+        <span class="pill">SecurityX</span>
         <span class="pill">E|CIH</span>
         <span class="pill">Splunk Core User</span>
         <span class="pill">OSINT Specialist</span>
         <span class="pill">EC-Council CAIPM</span>
+        <span class="pill hot">ICS/OT Security</span>
       </div>
 
       <div class="hero-actions">
@@ -487,7 +490,7 @@ footer span{color:var(--text)}
       </div>
 
       <div class="hero-stats">
-        <div><div class="hstat-n">9</div><div class="hstat-l">Certifications</div></div>
+        <div><div class="hstat-n">11</div><div class="hstat-l">Certifications</div></div>
         <div><div class="hstat-n">200<sup>+</sup></div><div class="hstat-l">SOC Hours</div></div>
         <div><div class="hstat-n">76<sup>%</sup></div><div class="hstat-l">Vuln Reduction</div></div>
         <div><div class="hstat-n">0</div><div class="hstat-l">Days to Start</div></div>
@@ -560,9 +563,9 @@ footer span{color:var(--text)}
         <div class="metric-desc">Total vuln reduction in enterprise VM program — 26 findings to 6. 100% of criticals cleared across 4 remediation rounds.</div>
       </div>
       <div class="metric-card mc-purple reveal reveal-d3">
-        <div class="metric-n cn-purple">9</div>
+        <div class="metric-n cn-purple">11</div>
         <div class="metric-label">Active Certifications</div>
-        <div class="metric-desc">CCNA, CISM, CEH, Security+, E|CIH, Splunk Core Certified User, EC-Council CAIPM, OSINT Specialist, C|AIPM.</div>
+        <div class="metric-desc">CCNA, CISM, CEH, Security+, SecurityX, CTIA, E|CIH, Splunk Core, EC-Council CAIPM, OSINT Specialist, OSMOSIS OSC.</div>
       </div>
     </div>
   </div>
@@ -720,6 +723,25 @@ footer span{color:var(--text)}
         <div class="proj-cta">View Lab &rarr;</div>
       </a>
 
+      <a href="otforge-lab01-portfolio-final.html" class="proj-card span2 reveal">
+        <div class="proj-bar" style="background:linear-gradient(90deg,#f59e0b,#ef4444)"></div>
+        <div class="proj-body">
+          <div class="proj-type">ICS/SCADA Security &nbsp;&middot;&nbsp; Modbus TCP &nbsp;&middot;&nbsp; UTSA / NSA CyberSkills2Work &nbsp;&middot;&nbsp; DCWF 212</div>
+          <div class="proj-title">Modbus Coil Write Attack &mdash; OTForge Tutorial 01</div>
+          <p class="proj-desc">Full-cycle OT attack simulation against a simulated water treatment facility PLC. Conducted OSINT reconnaissance that exposed the OT subnet, Modbus port, and plaintext credentials from public HTML comments — zero packets to the OT network. Confirmed Modbus TCP exposure via Nmap, documented baseline coil state, then executed an FC05 Write Single Coil command closing the outlet valve while the inlet pump ran. Tank reached 1000&nbsp;cm overflow. Monitored blue team detection in Suricata, Zeek, and Grafana (530 alerts). Confirmed PLC state change in OpenPLC IDE. Remediated by restoring Coil 1 to TRUE. Mirrors the 2021 Oldsmar, FL water treatment incident technique.</p>
+        </div>
+        <div class="proj-metrics">
+          <div><div class="pm-n" style="color:#f87171">1000</div><div class="pm-l">cm Overflow</div></div>
+          <div><div class="pm-n" style="color:var(--amber)">530</div><div class="pm-l">IDS Alerts</div></div>
+          <div><div class="pm-n" style="color:var(--blue-l)">11</div><div class="pm-l">Screenshots</div></div>
+          <div><div class="pm-n" style="color:var(--green)">FC05</div><div class="pm-l">Attack Vector</div></div>
+        </div>
+        <div class="proj-tags">
+          <span class="ptag">Modbus TCP</span><span class="ptag">OpenPLC</span><span class="ptag">OSINT</span><span class="ptag">Nmap</span><span class="ptag">Suricata</span><span class="ptag">Zeek</span><span class="ptag">Grafana</span><span class="ptag">MITRE ATT&amp;CK for ICS</span><span class="ptag">IEC 62443</span><span class="ptag">OTForge</span><span class="ptag">Kali Linux</span>
+        </div>
+        <div class="proj-cta">View Lab &rarr;</div>
+      </a>
+
     </div>
   </div>
 </section>
@@ -863,6 +885,9 @@ footer span{color:var(--text)}
       <div class="cert-tile ct-purple reveal"><div class="cert-level cl-purple">OSINT</div><div class="cert-name">OSINT Specialist Investigator</div><div class="cert-issuer">DSU NCAE-C &nbsp;·&nbsp; Mar 2026</div></div>
       <div class="cert-tile ct-green reveal reveal-d1"><div class="cert-level cl-green">AI / Management</div><div class="cert-name">EC-Council CAIPM</div><div class="cert-issuer">EC-Council</div></div>
       <div class="cert-tile ct-blue reveal reveal-d2"><div class="cert-level cl-blue">Networking</div><div class="cert-name">CCNA</div><div class="cert-issuer">Cisco</div></div>
+      <div class="cert-tile ct-amber reveal"><div class="cert-level cl-amber">Threat Intel</div><div class="cert-name">CTIA</div><div class="cert-issuer">EC-Council</div></div>
+      <div class="cert-tile ct-blue reveal reveal-d1"><div class="cert-level cl-blue">Advanced</div><div class="cert-name">SecurityX</div><div class="cert-issuer">CompTIA</div></div>
+      <div class="cert-tile reveal reveal-d2" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25)"><div class="cert-level" style="color:#f87171;border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06)">ICS / OT</div><div class="cert-name">Control Systems Security Specialist</div><div class="cert-issuer">UTSA / NSA CyberSkills2Work</div></div>
     </div>
   </div>
 </section>
@@ -910,6 +935,13 @@ footer span{color:var(--text)}
         <div class="sk-bar"><span class="sk-name">MQTT Security</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="75%"></div></div><span class="sk-pct">75%</span></div>
         <div class="sk-bar"><span class="sk-name">mTLS / PKI</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="74%"></div></div><span class="sk-pct">74%</span></div>
         <div class="sk-bar"><span class="sk-name">IoT Threat Model</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="76%"></div></div><span class="sk-pct">76%</span></div>
+      </div>
+      <div class="sk-group reveal reveal-d2">
+        <div class="sk-label" style="color:#f87171">// ICS / OT Security</div>
+        <div class="sk-bar"><span class="sk-name">Modbus TCP</span><div class="sk-track"><div class="sk-fill" style="background:#ef4444" data-w="78%"></div></div><span class="sk-pct">78%</span></div>
+        <div class="sk-bar"><span class="sk-name">OTForge / OpenPLC</span><div class="sk-track"><div class="sk-fill" style="background:#ef4444" data-w="72%"></div></div><span class="sk-pct">72%</span></div>
+        <div class="sk-bar"><span class="sk-name">Suricata IDS</span><div class="sk-track"><div class="sk-fill" style="background:#ef4444" data-w="76%"></div></div><span class="sk-pct">76%</span></div>
+        <div class="sk-bar"><span class="sk-name">MITRE ICS ATT&amp;CK</span><div class="sk-track"><div class="sk-fill" style="background:#ef4444" data-w="80%"></div></div><span class="sk-pct">80%</span></div>
       </div>
     </div>
   </div>

@@ -355,6 +355,12 @@ section{padding:5.5rem 3.5rem;position:relative;z-index:1}
 .sk-fill{height:100%;border-radius:2px;width:0;transition:width 1s cubic-bezier(.4,0,.2,1)}
 .sf-blue{background:var(--blue)}.sf-amber{background:var(--amber)}.sf-green{background:var(--green)}.sf-purple{background:#7c3aed}
 .sk-pct{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--dim);width:30px;text-align:right;flex-shrink:0}
+.sk-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.sk-tag{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--text);background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:.32rem .55rem;letter-spacing:.01em}
+.sk-proof{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--dim);border-top:1px solid var(--border);padding-top:.7rem;margin-top:.2rem;line-height:1.5}
+.sk-proof a{color:var(--blue-l);text-decoration:none}
+.sk-proof a:hover{text-decoration:underline}
+.ci-k{display:inline-block;color:var(--blue-l);opacity:.85;margin-right:.4rem;letter-spacing:.1em}
 
 /* ── CONTACT ── */
 #contact{position:relative;overflow:hidden}
@@ -463,7 +469,7 @@ footer span{color:var(--text)}
       <div class="hero-roles">SOC Analyst &nbsp;·&nbsp; Incident Response &nbsp;·&nbsp; Threat Intelligence</div>
 
       <p class="hero-pitch">
-        Cybersecurity professional with <strong>11 active certifications</strong>, a hands-on home SOC lab, and 25 years of evidence-based investigative work. Built enterprise vulnerability management programs from scratch, authored KQL threat hunts in Microsoft Defender, executed full-stack SOC simulations, and ran a live ICS/SCADA Modbus coil write attack against a simulated water treatment PLC. <strong>Currently enrolled at Per Scholas NC and Thomas Edison State University (M.S. Cybersecurity).</strong>
+        SOC analyst with <strong>12 certifications</strong>, a hands-on home SOC lab, and 25 years of evidence-based investigative work. I've built enterprise vulnerability management from scratch, authored KQL threat hunts in Microsoft Defender, and run a live ICS/SCADA Modbus attack against a simulated water-treatment PLC — now finishing an <strong>M.S. in Cybersecurity at Thomas Edison State University</strong>.
       </p>
 
       <div class="hero-pills">
@@ -477,6 +483,7 @@ footer span{color:var(--text)}
         <span class="pill">Splunk Core User</span>
         <span class="pill">OSINT Specialist</span>
         <span class="pill">EC-Council CAIPM</span>
+        <span class="pill">OSMOSIS OSC</span>
         <span class="pill hot">ICS/OT Security</span>
       </div>
 
@@ -490,7 +497,7 @@ footer span{color:var(--text)}
       </div>
 
       <div class="hero-stats">
-        <div><div class="hstat-n">11</div><div class="hstat-l">Certifications</div></div>
+        <div><div class="hstat-n">12</div><div class="hstat-l">Certifications</div></div>
         <div><div class="hstat-n">200<sup>+</sup></div><div class="hstat-l">SOC Hours</div></div>
         <div><div class="hstat-n">76<sup>%</sup></div><div class="hstat-l">Vuln Reduction</div></div>
         <div><div class="hstat-n">0</div><div class="hstat-l">Days to Start</div></div>
@@ -519,9 +526,9 @@ footer span{color:var(--text)}
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 13a19.79 19.79 0 01-3.07-8.67A2 2 0 012.85 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
             (551) 722-0371
           </a>
-          <a href="mailto:christopher.ham2@protonmail.com" class="id-link">
+          <a href="/cdn-cgi/l/email-protection#03606b716a70776c736b66712d6b626e314373716c776c6d6e626a6f2d606c6e" class="id-link">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            christopher.ham2@protonmail.com
+            <span class="__cf_email__" data-cfemail="90f3f8e2f9e3e4ffe0f8f5e2bef8f1fda2d0e0e2ffe4fffefdf1f9fcbef3fffd">[email&#160;protected]</span>
           </a>
           <a href="https://linkedin.com/in/christopher-ham-cyber" class="id-link" target="_blank">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
@@ -563,9 +570,9 @@ footer span{color:var(--text)}
         <div class="metric-desc">Total vuln reduction in enterprise VM program — 26 findings to 6. 100% of criticals cleared across 4 remediation rounds.</div>
       </div>
       <div class="metric-card mc-purple reveal reveal-d3">
-        <div class="metric-n cn-purple">11</div>
+        <div class="metric-n cn-purple">12</div>
         <div class="metric-label">Active Certifications</div>
-        <div class="metric-desc">CCNA, CISM, CEH, Security+, SecurityX, CTIA, E|CIH, Splunk Core, EC-Council CAIPM, OSINT Specialist, OSMOSIS OSC.</div>
+        <div class="metric-desc">CCNA, CISM, CEH, Security+, SecurityX, CTIA, E|CIH, Splunk Core, EC-Council CAIPM, OSINT Specialist, OSMOSIS OSC, and ICS/OT Control Systems Security Specialist.</div>
       </div>
     </div>
   </div>
@@ -756,16 +763,16 @@ footer span{color:var(--text)}
     </div>
     <div class="exp-timeline">
 
-      <div class="exp-entry e-cyber reveal">
+      <div class="exp-entry e-dim reveal">
         <div class="exp-meta">
           <span class="exp-date">Jan 2026 – Present</span>
-          <span class="exp-badge eb-cyber">Security · Operations</span>
+          <span class="exp-badge eb-le">Physical Security · Current</span>
         </div>
         <div class="exp-role">Security Officer</div>
         <div class="exp-org">Carolina Meadows &nbsp;·&nbsp; Durham, NC</div>
         <ul class="exp-points">
-          <li>Monitor physical and digital security posture for a senior living campus; triage and escalate anomalies using structured incident response protocols</li>
-          <li>Coordinate with facility management and vendors to remediate access control and surveillance gaps</li>
+          <li>Monitor access control and surveillance systems across a large residential campus; document and escalate incidents through established reporting procedures</li>
+          <li>Current role while completing full-time cybersecurity training and an M.S. in Cybersecurity</li>
         </ul>
       </div>
 
@@ -877,7 +884,7 @@ footer span{color:var(--text)}
     </div>
     <div class="certs-grid">
       <div class="cert-tile ct-blue reveal"><div class="cert-level cl-blue">Security</div><div class="cert-name">Security+</div><div class="cert-issuer">CompTIA</div></div>
-      <div class="cert-tile ct-blue reveal reveal-d1"><div class="cert-level cl-blue">Foundation</div><div class="cert-name">Security+</div><div class="cert-issuer">CompTIA</div></div>
+      <div class="cert-tile ct-purple reveal reveal-d1"><div class="cert-level cl-purple">OSINT / Forensics</div><div class="cert-name">OSMOSIS OSC</div><div class="cert-issuer">OSMOSIS Association</div></div>
       <div class="cert-tile ct-amber reveal reveal-d2"><div class="cert-level cl-amber">Management</div><div class="cert-name">CISM</div><div class="cert-issuer">ISACA</div></div>
       <div class="cert-tile ct-green reveal"><div class="cert-level cl-green">Offensive</div><div class="cert-name">CEH</div><div class="cert-issuer">EC-Council</div></div>
       <div class="cert-tile ct-green reveal reveal-d1"><div class="cert-level cl-green">IR / Response</div><div class="cert-name">E|CIH</div><div class="cert-issuer">EC-Council</div></div>
@@ -903,45 +910,45 @@ footer span{color:var(--text)}
     <div class="skills-grid">
       <div class="sk-group reveal">
         <div class="sk-label sk-blue">// Detection &amp; Triage</div>
-        <div class="sk-bar"><span class="sk-name">KQL</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="88%"></div></div><span class="sk-pct">88%</span></div>
-        <div class="sk-bar"><span class="sk-name">MDE</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="84%"></div></div><span class="sk-pct">84%</span></div>
-        <div class="sk-bar"><span class="sk-name">M. Sentinel</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="80%"></div></div><span class="sk-pct">80%</span></div>
-        <div class="sk-bar"><span class="sk-name">Splunk SPL</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="82%"></div></div><span class="sk-pct">82%</span></div>
+        <div class="sk-tags">
+          <span class="sk-tag">KQL</span><span class="sk-tag">Microsoft Defender (MDE)</span><span class="sk-tag">Microsoft Sentinel</span><span class="sk-tag">Splunk SPL</span><span class="sk-tag">Alert Triage</span>
+        </div>
+        <div class="sk-proof">Demonstrated in <a href="threat-hunt.html">Threat Hunt: TOR Usage &rarr;</a></div>
       </div>
       <div class="sk-group reveal reveal-d1">
-        <div class="sk-label sk-amber">// Infrastructure &amp; Lab</div>
-        <div class="sk-bar"><span class="sk-name">Active Directory</span><div class="sk-track"><div class="sk-fill sf-amber" data-w="82%"></div></div><span class="sk-pct">82%</span></div>
-        <div class="sk-bar"><span class="sk-name">Wazuh / Elastic</span><div class="sk-track"><div class="sk-fill sf-amber" data-w="78%"></div></div><span class="sk-pct">78%</span></div>
-        <div class="sk-bar"><span class="sk-name">Security Onion</span><div class="sk-track"><div class="sk-fill sf-amber" data-w="75%"></div></div><span class="sk-pct">75%</span></div>
-        <div class="sk-bar"><span class="sk-name">Azure VMs</span><div class="sk-track"><div class="sk-fill sf-amber" data-w="80%"></div></div><span class="sk-pct">80%</span></div>
+        <div class="sk-label sk-amber">// Infrastructure &amp; SIEM</div>
+        <div class="sk-tags">
+          <span class="sk-tag">Active Directory</span><span class="sk-tag">Wazuh / Elastic</span><span class="sk-tag">Security Onion</span><span class="sk-tag">Azure VMs</span>
+        </div>
+        <div class="sk-proof">Demonstrated in <a href="project-x.html">Project X: SOC Simulation &rarr;</a></div>
       </div>
       <div class="sk-group reveal reveal-d2">
         <div class="sk-label sk-green">// Vuln Mgmt &amp; Scripting</div>
-        <div class="sk-bar"><span class="sk-name">Tenable</span><div class="sk-track"><div class="sk-fill sf-green" data-w="85%"></div></div><span class="sk-pct">85%</span></div>
-        <div class="sk-bar"><span class="sk-name">PowerShell</span><div class="sk-track"><div class="sk-fill sf-green" data-w="84%"></div></div><span class="sk-pct">84%</span></div>
-        <div class="sk-bar"><span class="sk-name">Bash</span><div class="sk-track"><div class="sk-fill sf-green" data-w="76%"></div></div><span class="sk-pct">76%</span></div>
-        <div class="sk-bar"><span class="sk-name">STIG / Compliance</span><div class="sk-track"><div class="sk-fill sf-green" data-w="78%"></div></div><span class="sk-pct">78%</span></div>
+        <div class="sk-tags">
+          <span class="sk-tag">Tenable Nessus</span><span class="sk-tag">PowerShell</span><span class="sk-tag">Bash</span><span class="sk-tag">DoD STIG / DISA</span>
+        </div>
+        <div class="sk-proof">Demonstrated in <a href="vm-lab.html">VM Program &rarr;</a> &amp; <a href="stig-lab.html">STIG Hardening &rarr;</a></div>
       </div>
       <div class="sk-group reveal">
         <div class="sk-label sk-purple">// DFIR &amp; Investigations</div>
-        <div class="sk-bar"><span class="sk-name">OSINT</span><div class="sk-track"><div class="sk-fill sf-purple" data-w="90%"></div></div><span class="sk-pct">90%</span></div>
-        <div class="sk-bar"><span class="sk-name">MITRE ATT&amp;CK</span><div class="sk-track"><div class="sk-fill sf-purple" data-w="85%"></div></div><span class="sk-pct">85%</span></div>
-        <div class="sk-bar"><span class="sk-name">Dig. Forensics</span><div class="sk-track"><div class="sk-fill sf-purple" data-w="78%"></div></div><span class="sk-pct">78%</span></div>
-        <div class="sk-bar"><span class="sk-name">Incident Response</span><div class="sk-track"><div class="sk-fill sf-purple" data-w="80%"></div></div><span class="sk-pct">80%</span></div>
+        <div class="sk-tags">
+          <span class="sk-tag">OSINT</span><span class="sk-tag">MITRE ATT&amp;CK</span><span class="sk-tag">Autopsy</span><span class="sk-tag">NIST SP 800-61 IR</span><span class="sk-tag">Chain of Custody</span>
+        </div>
+        <div class="sk-proof">Demonstrated in <a href="capstone-lab.html">Capstone Breach &rarr;</a> &amp; <a href="forensics-lab-jimmy-wilson.html">Forensics Exam &rarr;</a></div>
       </div>
       <div class="sk-group reveal reveal-d1">
         <div class="sk-label sk-blue">// Network &amp; IoT</div>
-        <div class="sk-bar"><span class="sk-name">Wireshark</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="80%"></div></div><span class="sk-pct">80%</span></div>
-        <div class="sk-bar"><span class="sk-name">MQTT Security</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="75%"></div></div><span class="sk-pct">75%</span></div>
-        <div class="sk-bar"><span class="sk-name">mTLS / PKI</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="74%"></div></div><span class="sk-pct">74%</span></div>
-        <div class="sk-bar"><span class="sk-name">IoT Threat Model</span><div class="sk-track"><div class="sk-fill sf-blue" data-w="76%"></div></div><span class="sk-pct">76%</span></div>
+        <div class="sk-tags">
+          <span class="sk-tag">Wireshark</span><span class="sk-tag">MQTT Security</span><span class="sk-tag">mTLS / PKI</span><span class="sk-tag">Standard ACLs</span><span class="sk-tag">EIGRP</span>
+        </div>
+        <div class="sk-proof">Demonstrated in <a href="iot-lab.html">IoT Security &rarr;</a> &amp; <a href="acl-lab.html">ACL Lab &rarr;</a></div>
       </div>
       <div class="sk-group reveal reveal-d2">
         <div class="sk-label" style="color:#f87171">// ICS / OT Security</div>
-        <div class="sk-bar"><span class="sk-name">Modbus TCP</span><div class="sk-track"><div class="sk-fill" style="background:#ef4444" data-w="78%"></div></div><span class="sk-pct">78%</span></div>
-        <div class="sk-bar"><span class="sk-name">OTForge / OpenPLC</span><div class="sk-track"><div class="sk-fill" style="background:#ef4444" data-w="72%"></div></div><span class="sk-pct">72%</span></div>
-        <div class="sk-bar"><span class="sk-name">Suricata IDS</span><div class="sk-track"><div class="sk-fill" style="background:#ef4444" data-w="76%"></div></div><span class="sk-pct">76%</span></div>
-        <div class="sk-bar"><span class="sk-name">MITRE ICS ATT&amp;CK</span><div class="sk-track"><div class="sk-fill" style="background:#ef4444" data-w="80%"></div></div><span class="sk-pct">80%</span></div>
+        <div class="sk-tags">
+          <span class="sk-tag">Modbus TCP</span><span class="sk-tag">OpenPLC</span><span class="sk-tag">Suricata / Zeek</span><span class="sk-tag">MITRE ATT&amp;CK for ICS</span><span class="sk-tag">IEC 62443</span>
+        </div>
+        <div class="sk-proof">Demonstrated in <a href="otforge-lab01-portfolio-final.html">Modbus Coil Write Attack &rarr;</a></div>
       </div>
     </div>
   </div>
@@ -960,10 +967,10 @@ footer span{color:var(--text)}
       <a href="https://github.com/cham252" class="btn-outline" target="_blank">GitHub Labs</a>
     </div>
     <div class="c-info">
-      <div class="c-info-item">📞 <a href="tel:5517220371">(551) 722-0371</a></div>
-      <div class="c-info-item">✉️ <a href="mailto:christopher.ham2@protonmail.com">christopher.ham2@protonmail.com</a></div>
-      <div class="c-info-item">💼 <a href="https://linkedin.com/in/christopher-ham-cyber" target="_blank">linkedin.com/in/christopher-ham-cyber</a></div>
-      <div class="c-info-item">💻 <a href="https://github.com/cham252" target="_blank">github.com/cham252</a></div>
+      <div class="c-info-item"><span class="ci-k">TEL</span><a href="tel:5517220371">(551) 722-0371</a></div>
+      <div class="c-info-item"><span class="ci-k">EMAIL</span><a href="/cdn-cgi/l/email-protection#9efdf6ecf7edeaf1eef6fbecb0f6fff3acdeeeecf1eaf1f0f3fff7f2b0fdf1f3"><span class="__cf_email__" data-cfemail="eb88839982989f849b838e99c5838a86d9ab9b99849f8485868a8287c5888486">[email&#160;protected]</span></a></div>
+      <div class="c-info-item"><span class="ci-k">LI</span><a href="https://linkedin.com/in/christopher-ham-cyber" target="_blank">linkedin.com/in/christopher-ham-cyber</a></div>
+      <div class="c-info-item"><span class="ci-k">GH</span><a href="https://github.com/cham252" target="_blank">github.com/cham252</a></div>
     </div>
   </div>
 </section>
@@ -996,7 +1003,7 @@ footer span{color:var(--text)}
   <div>Retired badge. Active labs. Always hunting.</div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
   window.toggleMenu = function(){ document.getElementById('mobileMenu').classList.toggle('open'); };
   window.closeMenu = function(){ document.getElementById('mobileMenu').classList.remove('open'); };

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSINT Investigation: Corporate Due Diligence Background Report | Christopher Ham</title>
+<meta name="description" content="Full open-source background investigation and corporate due diligence report, delivered to a law-firm client on a 24-hour follow-up SLA. Corporate registry, court records, public records, and media source development.">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060d1b;--bg2:#09152a;--bg3:#0d1c38;--bg4:#112044;--border:#162a4a;--border2:#1e3864;--blue:#2d7ef6;--blue-l:#5b9eff;--blue-d:#1a5fd4;--green:#22c55e;--amber:#f59e0b;--purple:#8b5cf6;--purple-l:#a78bfa;--text:#dde6f5;--muted:#8da8cc;--dim:#4a6888;--white:#f0f6ff}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-weight:400;line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(45,126,246,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(45,126,246,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal-d1{transition-delay:.1s}.reveal-d2{transition-delay:.2s}.reveal-d3{transition-delay:.3s}
+
+nav{position:fixed;top:0;width:100%;z-index:900;background:rgba(6,13,27,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 3.5rem;height:60px}
+.nav-brand{display:flex;align-items:center;gap:.7rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.1rem;color:var(--white);text-decoration:none;letter-spacing:.04em}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2.5s ease infinite;flex-shrink:0}
+.nav-links{display:flex;gap:2.2rem;list-style:none}
+.nav-links a{font-family:'JetBrains Mono',monospace;font-size:.67rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--blue-l)}
+.nav-back{font-family:'JetBrains Mono',monospace;font-size:.67rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border2);padding:.48rem 1.3rem;text-decoration:none;border-radius:2px;transition:border-color .2s,color .2s;white-space:nowrap}
+.nav-back:hover{border-color:var(--blue-l);color:var(--blue-l)}
+.nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:.5rem;background:none;border:none}
+.nav-hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:1px}
+.nav-mobile{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(6,13,27,.99);border-bottom:1px solid var(--border);z-index:899;flex-direction:column}
+.nav-mobile.open{display:flex}
+.nav-mobile a{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--muted);text-decoration:none;letter-spacing:.08em;text-transform:uppercase;padding:1rem 1.5rem;border-bottom:1px solid var(--border);transition:color .2s}
+.nav-mobile a:hover{color:var(--white)}
+
+section{padding:5.5rem 3.5rem;position:relative;z-index:1}
+.s-alt{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.inner{max-width:1100px;margin:0 auto}
+.s-head{display:flex;align-items:center;gap:1rem;margin-bottom:2.5rem}
+.s-num{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--blue-l);letter-spacing:.16em;opacity:.65;white-space:nowrap}
+.s-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:2rem;color:var(--white);letter-spacing:.02em;white-space:nowrap}
+.s-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border2) 0%,transparent 100%)}
+
+#hero{position:relative;min-height:60vh;display:flex;align-items:center;padding:7rem 3.5rem 4rem;overflow:hidden}
+.hero-glow{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 70% 60% at 55% 50%,rgba(139,92,246,.07) 0%,transparent 60%)}
+.hero-inner{position:relative;z-index:1;max-width:1100px;width:100%;margin:0 auto}
+.hero-crumb{display:flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.4rem}
+.hero-crumb a{color:var(--dim);text-decoration:none;transition:color .2s}
+.hero-crumb a:hover{color:var(--blue-l)}
+.hero-crumb span{opacity:.4}
+.lab-type{display:inline-flex;align-items:center;gap:.5rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--purple-l);border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.06);padding:.3rem .9rem;border-radius:2px;margin-bottom:1.2rem}
+.lab-type-dot{width:5px;height:5px;border-radius:50%;background:var(--purple-l);animation:pulse 2.5s ease infinite}
+.hero-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(2.8rem,6vw,5.5rem);line-height:.95;color:var(--white);letter-spacing:-.01em;margin-bottom:1.2rem;opacity:0;animation:fadeUp .6s ease forwards .05s}
+.hero-title em{color:var(--purple-l);font-style:normal}
+.hero-sub{max-width:680px;font-size:1rem;color:var(--muted);font-weight:300;line-height:1.8;margin-bottom:2rem;opacity:0;animation:fadeUp .6s ease forwards .15s}
+.hero-meta{display:flex;flex-wrap:wrap;gap:1.5rem;padding-top:1.8rem;border-top:1px solid var(--border);opacity:0;animation:fadeUp .6s ease forwards .25s}
+.hm-item{display:flex;flex-direction:column;gap:.2rem}
+.hm-label{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.hm-value{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text)}
+.hm-value.purple{color:var(--purple-l)}
+
+.metrics-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem}
+.mcard{background:var(--bg3);border:1px solid var(--border);border-radius:4px;border-top:3px solid;padding:1.6rem 1.3rem;transition:transform .25s}
+.mcard:hover{transform:translateY(-3px)}
+.mc-purple{border-top-color:var(--purple)}.mc-blue{border-top-color:var(--blue)}.mc-amber{border-top-color:var(--amber)}.mc-red{border-top-color:#ef4444}.mc-green{border-top-color:var(--green)}
+.mcard-n{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.8rem;line-height:1;margin-bottom:.3rem}
+.cn-purple{color:var(--purple-l)}.cn-blue{color:var(--blue-l)}.cn-amber{color:var(--amber)}.cn-red{color:#f87171}.cn-green{color:var(--green)}
+.mcard-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.9rem;color:var(--white);margin-bottom:.3rem}
+.mcard-desc{font-size:.75rem;color:var(--dim);line-height:1.5;font-weight:300}
+
+.case-table{width:100%;border-collapse:collapse}
+.case-table tr{border-bottom:1px solid var(--border)}
+.case-table tr:last-child{border-bottom:none}
+.case-table td{padding:.75rem 1rem;font-size:.85rem;vertical-align:top}
+.ct-key{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;width:200px;padding-top:.85rem}
+.ct-val{color:var(--text);font-weight:300}
+.ct-val strong{color:var(--white);font-weight:500}
+
+.steps{display:flex;flex-direction:column;gap:.8rem}
+.step{display:flex;gap:1.4rem;align-items:flex-start;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1.3rem 1.5rem;transition:border-color .2s}
+.step:hover{border-color:var(--border2)}
+.step-num{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2rem;line-height:1;color:rgba(139,92,246,.2);min-width:2rem;padding-top:.1rem}
+.step-head{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;color:var(--white);margin-bottom:.3rem;letter-spacing:.01em}
+.step-body{font-size:.83rem;color:var(--muted);font-weight:300;line-height:1.65}
+
+.finding-block{background:var(--bg3);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:1rem}
+.finding-header{display:flex;align-items:center;gap:1rem;padding:.9rem 1.4rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)}
+.finding-num{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--purple-l);letter-spacing:.1em}
+.finding-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;color:var(--white);letter-spacing:.01em}
+.finding-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:.58rem;padding:.15rem .55rem;border:1px solid rgba(139,92,246,.3);color:var(--purple-l);background:rgba(139,92,246,.06);border-radius:2px}
+.finding-body{padding:1.2rem 1.4rem}
+.finding-body p{font-size:.85rem;color:var(--muted);font-weight:300;line-height:1.7;margin-bottom:.8rem}
+.finding-body p:last-child{margin-bottom:0}
+
+.ev-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:.8rem}
+.ev-table th{font-family:'JetBrains Mono',monospace;font-size:.55rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);padding:.6rem .8rem;border-bottom:1px solid var(--border2);text-align:left}
+.ev-table td{padding:.65rem .8rem;border-bottom:1px solid var(--border);color:var(--muted);font-weight:300;vertical-align:top}
+.ev-table tr:last-child td{border-bottom:none}
+.ev-table tr:hover td{background:rgba(255,255,255,.02)}
+.ev-flag{font-family:'JetBrains Mono',monospace;font-size:.55rem;padding:.12rem .4rem;border-radius:2px;border:1px solid;white-space:nowrap}
+.flag-red{color:#f87171;border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06)}
+.flag-amber{color:var(--amber);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05)}
+.flag-purple{color:var(--purple-l);border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.06)}
+.flag-blue{color:var(--blue-l);border-color:rgba(45,126,246,.3);background:rgba(45,126,246,.06)}
+.flag-green{color:var(--green);border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.06)}
+.ev-path{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--dim);word-break:break-all}
+
+.note-block{border:1px solid rgba(139,92,246,.25);border-left:3px solid var(--purple);background:rgba(139,92,246,.04);border-radius:2px;padding:.9rem 1.2rem;margin-top:.8rem}
+.note-label{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:var(--purple-l);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem}
+.note-body{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.65}
+
+.flags-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-top:.8rem}
+.flag-card{background:var(--bg3);border:1px solid var(--border);border-radius:4px;border-left:3px solid;padding:1.1rem}
+.fc-red{border-left-color:#ef4444}.fc-amber{border-left-color:var(--amber)}.fc-purple{border-left-color:var(--purple)}.fc-blue{border-left-color:var(--blue)}.fc-green{border-left-color:var(--green)}
+.fc-n{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2rem;line-height:1;margin-bottom:.2rem}
+.fc-red .fc-n{color:#f87171}.fc-amber .fc-n{color:var(--amber)}.fc-purple .fc-n{color:var(--purple-l)}.fc-blue .fc-n{color:var(--blue-l)}.fc-green .fc-n{color:var(--green)}
+.fc-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.85rem;color:var(--white);margin-bottom:.25rem}
+.fc-desc{font-size:.72rem;color:var(--dim);line-height:1.5;font-weight:300}
+
+.tools-wrap{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.tool-tag{font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:.25rem .7rem;border:1px solid var(--border);color:var(--muted);background:var(--bg3);border-radius:2px;transition:border-color .2s,color .2s}
+.tool-tag:hover{border-color:var(--border2);color:var(--text)}
+.tool-tag.hot{border-color:rgba(139,92,246,.3);color:var(--purple-l);background:rgba(139,92,246,.06)}
+
+.conc-list{display:flex;flex-direction:column;gap:.7rem}
+.conc-item{display:flex;gap:1.1rem;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1.1rem 1.3rem}
+.conc-n{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.4rem;color:rgba(139,92,246,.3);min-width:1.6rem;line-height:1.1;padding-top:.05rem}
+.conc-head{font-weight:500;color:var(--white);font-size:.88rem;margin-bottom:.25rem}
+.conc-body{font-size:.82rem;color:var(--muted);font-weight:300;line-height:1.65}
+
+.skills-strip{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.sk-pill{font-size:.78rem;padding:.35rem .9rem;background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.2);border-radius:2px;color:var(--purple-l);font-weight:400}
+
+footer{background:var(--bg);border-top:1px solid var(--border);padding:1.5rem 3.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);position:relative;z-index:1}
+footer a{color:var(--dim);text-decoration:none;transition:color .2s}
+footer a:hover{color:var(--blue-l)}
+.footer-links{display:flex;gap:1.5rem}
+
+@media(max-width:960px){
+  nav{padding:0 1.5rem}
+  .nav-links{display:none}
+  .nav-back{display:none}
+  .nav-hamburger{display:flex}
+  section{padding:4rem 1.5rem}
+  #hero{padding:6rem 1.5rem 3rem}
+  .metrics-strip{grid-template-columns:repeat(2,1fr)}
+  footer{padding:1.5rem;flex-direction:column;text-align:center}
+  .ct-key{width:140px}
+  .two-col{grid-template-columns:1fr!important}
+}
+@media(max-width:600px){
+  .metrics-strip{grid-template-columns:1fr}
+  .flags-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand"><span class="nav-dot"></span>CHRISTOPHER HAM</a>
+  <ul class="nav-links">
+    <li><a href="index.html#projects">Labs</a></li>
+    <li><a href="index.html#soc-exp">Experience</a></li>
+    <li><a href="index.html#certs">Certs</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+  </ul>
+  <a href="index.html#projects" class="nav-back">&larr; All Labs</a>
+  <button class="nav-hamburger" onclick="document.getElementById('mobileNav').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="mobileNav">
+  <a href="index.html">Home</a>
+  <a href="index.html#projects">All Labs</a>
+  <a href="index.html#contact">Contact</a>
+</div>
+
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-crumb">
+      <a href="index.html">cham252.github.io</a><span>/</span>
+      <a href="index.html#projects">labs</a><span>/</span>
+      osint-due-diligence
+    </div>
+    <div class="lab-type"><span class="lab-type-dot"></span>OSINT Investigation &nbsp;&middot;&nbsp; Corporate Due Diligence &nbsp;&middot;&nbsp; Client Deliverable</div>
+    <h1 class="hero-title">Full Background Investigation<br><em>Corporate Due Diligence Report</em></h1>
+    <p class="hero-sub">Open-source-only background investigation on a corporate executive for a simulated law-firm client, run the way an intelligence case file gets run: scope the requirement, work every source category systematically, document as you go, and stay accountable to the report after delivery &mdash; including a same-week client follow-up on a 24-hour response SLA.</p>
+    <div class="hero-meta">
+      <div class="hm-item"><span class="hm-label">Engagement</span><span class="hm-value">Simulated Law Firm Client</span></div>
+      <div class="hm-item"><span class="hm-label">Methods</span><span class="hm-value purple">Open-Source / Public Record Only</span></div>
+      <div class="hm-item"><span class="hm-label">Deliverable</span><span class="hm-value">Full Background Report + Client Follow-Up</span></div>
+      <div class="hm-item"><span class="hm-label">Response SLA</span><span class="hm-value">24 Hours</span></div>
+      <div class="hm-item"><span class="hm-label">Date</span><span class="hm-value">February 2026</span></div>
+      <div class="hm-item"><span class="hm-label">Framework</span><span class="hm-value">Corporate Due Diligence Reporting Standard</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="s-alt">
+  <div class="inner">
+    <div class="metrics-strip">
+      <div class="mcard mc-purple reveal"><div class="mcard-n cn-purple">7</div><div class="mcard-label">Source Categories Searched</div><div class="mcard-desc">Corporate registry, media, court records, public records databases, LinkedIn, social media, advanced search</div></div>
+      <div class="mcard mc-blue reveal reveal-d1"><div class="mcard-n cn-blue">24HR</div><div class="mcard-label">Client Response SLA</div><div class="mcard-desc">Follow-up correspondence turnaround required and met after report delivery</div></div>
+      <div class="mcard mc-green reveal reveal-d2"><div class="mcard-n cn-green">0</div><div class="mcard-label">Personal Derogatory Findings</div><div class="mcard-desc">Clean personal-record profile &mdash; every negative result documented, not left blank</div></div>
+      <div class="mcard mc-amber reveal reveal-d3"><div class="mcard-n cn-amber">100<sup style="font-size:1.2rem">%</sup></div><div class="mcard-label">Findings Source-Documented</div><div class="mcard-desc">Every finding traceable to its source and pull date for later defensibility</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <div class="s-head reveal"><div class="s-num">// 01</div><h2 class="s-title">Case Background</h2><div class="s-line"></div></div>
+    <div class="finding-block reveal">
+      <div class="finding-body">
+        <table class="case-table">
+          <tr><td class="ct-key">Case Number</td><td class="ct-val"><strong>CHam-DDS-2026-002</strong></td></tr>
+          <tr><td class="ct-key">Engagement Type</td><td class="ct-val">Full background investigation / corporate due diligence, simulated law-firm client</td></tr>
+          <tr><td class="ct-key">Subject</td><td class="ct-val">Corporate executive &mdash; public figure, publicly available information only</td></tr>
+          <tr><td class="ct-key">Requirement</td><td class="ct-val">Confirm identity and current role, surface personal or corporate legal exposure, assess reputational risk ahead of a client business decision</td></tr>
+          <tr><td class="ct-key">Constraints</td><td class="ct-val">Open-source and public-record methods only &mdash; no subject interviews, no onsite work</td></tr>
+          <tr><td class="ct-key">Examiner Role</td><td class="ct-val">Lead OSINT investigator / report author</td></tr>
+          <tr><td class="ct-key">Deliverable</td><td class="ct-val">Full background investigation report, plus follow-up client correspondence within a 24-hour SLA</td></tr>
+          <tr><td class="ct-key">Documentation Standard</td><td class="ct-val">Every finding source-logged with origin and pull date &mdash; built to hold up on a second read, months or years later</td></tr>
+          <tr><td class="ct-key">Examiner</td><td class="ct-val">Christopher Ham &mdash; CEH &middot; CISM &middot; SecurityX &middot; Security+ &middot; CTIA EC-Council Threat Intelligence Analyst &middot; NCAE-C OSINT Specialist Investigator &middot; OSMOSIS OSC</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="s-alt">
+  <div class="inner">
+    <div class="s-head reveal"><div class="s-num">// 02</div><h2 class="s-title">Investigation Procedure</h2><div class="s-line"></div></div>
+    <div class="steps">
+      <div class="step reveal"><div class="step-num">01</div><div><div class="step-head">Requirement Intake &amp; Scoping</div><div class="step-body">Defined exactly what the client needed before opening a single source: identity confirmation, personal legal exposure, corporate risk posture, and reputational considerations. Scoped the engagement to open-source and public-record methods only, consistent with the client's constraints.</div></div></div>
+      <div class="step reveal reveal-d1"><div class="step-num">02</div><div><div class="step-head">Identity &amp; Corporate Registry Confirmation</div><div class="step-body">Confirmed the subject's current role and the target company's legal structure through Secretary of State / corporate registry search &mdash; incorporation date, state of incorporation, and officer-of-record status.</div></div></div>
+      <div class="step reveal reveal-d2"><div class="step-num">03</div><div><div class="step-head">Systematic Source Development</div><div class="step-body">Worked outward from confirmed identity through six additional source categories: Google dorking / advanced search operators, LinkedIn profile research, news and trade media search, court records search (state and federal portals), proprietary public records database queries, and broader social media review.</div></div></div>
+      <div class="step reveal reveal-d3"><div class="step-num">04</div><div><div class="step-head">Source Documentation &amp; Risk Categorization</div><div class="step-body">Logged every finding as it was pulled &mdash; source, date, and category &mdash; and sorted results into personal record checks, corporate ownership/structure, and legal/reputational exposure. Negative findings were documented as explicit negative results, not left blank.</div></div></div>
+      <div class="step reveal"><div class="step-num">05</div><div><div class="step-head">Report Delivery &amp; Client Follow-Up</div><div class="step-body">Delivered the full report, then re-reviewed it ahead of the client's follow-up window. Caught and corrected a leftover template line before the client's questions arrived, and responded to the client's follow-up email within the required 24-hour window, prepared to amend and re-date the report if requested.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <div class="s-head reveal"><div class="s-num">// 03</div><h2 class="s-title">Investigation Findings</h2><div class="s-line"></div></div>
+
+    <div class="finding-block reveal">
+      <div class="finding-header"><div class="finding-num">// 03.1</div><div class="finding-title">Personal Record Checks</div><div class="finding-count">8 categories &mdash; 0 hits</div></div>
+      <div class="finding-body">
+        <p>Full personal-record sweep across property, vehicles, litigation, liens, bankruptcy, evictions, and criminal / sex-offender registries. Every category returned negative &mdash; and every category was written up as a documented negative finding rather than omitted.</p>
+        <table class="ev-table">
+          <thead><tr><th>Category</th><th>Method</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Property Ownership</td><td>Public records database</td><td><span class="ev-flag flag-green">No records located</span></td></tr>
+            <tr><td>Vehicle Ownership</td><td>Public records database</td><td><span class="ev-flag flag-green">No records located</span></td></tr>
+            <tr><td>Personal Litigation</td><td>Court records search</td><td><span class="ev-flag flag-green">None located</span></td></tr>
+            <tr><td>Liens / Judgments</td><td>Public records database</td><td><span class="ev-flag flag-green">None located</span></td></tr>
+            <tr><td>Bankruptcy</td><td>Court records search</td><td><span class="ev-flag flag-green">No filings located</span></td></tr>
+            <tr><td>Eviction History</td><td>Public records database</td><td><span class="ev-flag flag-green">No records located</span></td></tr>
+            <tr><td>Criminal Records</td><td>Federal / state / county DOC, court, arrest logs</td><td><span class="ev-flag flag-green">None located</span></td></tr>
+            <tr><td>Sex Offender Registry</td><td>NSOPW (DOJ-coordinated, 50-state)</td><td><span class="ev-flag flag-green">None located</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note-block">
+          <div class="note-label">Investigator Note</div>
+          <div class="note-body">A clean personal-record profile is still a finding a client needs, not an empty section. Documenting the search performed and its negative result is what makes the report defensible if someone asks how thoroughly it was checked.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="finding-block reveal">
+      <div class="finding-header"><div class="finding-num">// 03.2</div><div class="finding-title">Corporate Ownership &amp; Structure</div><div class="finding-count">Registry-confirmed</div></div>
+      <div class="finding-body">
+        <p>Corporate registry search confirmed the subject's officer role, the company's incorporation details, and a parent-company ownership chain carrying cross-border regulatory implications worth flagging for a client assessing risk.</p>
+        <table class="ev-table">
+          <thead><tr><th>Data Point</th><th>Finding</th></tr></thead>
+          <tbody>
+            <tr><td>Officer Role</td><td>Confirmed current chief executive, effective date verified against public announcement</td></tr>
+            <tr><td>Incorporation</td><td>State of incorporation and incorporation date confirmed via registry search</td></tr>
+            <tr><td>Ownership Structure</td><td><span class="ev-flag flag-amber">Fully owned by a foreign parent holding company</span> &mdash; flagged for cross-border regulatory and foreign-investment scrutiny considerations</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="finding-block reveal">
+      <div class="finding-header"><div class="finding-num">// 03.3</div><div class="finding-title">Legal &amp; Reputational Exposure</div><div class="finding-count">Media &amp; litigation review</div></div>
+      <div class="finding-body">
+        <p>News and media search built a timeline of corporate-level events relevant to the client's risk assessment &mdash; none personally naming the subject, all material to a due diligence read of the company he leads.</p>
+        <table class="ev-table">
+          <thead><tr><th>Event</th><th>Relevance</th></tr></thead>
+          <tbody>
+            <tr><td>Workforce reduction, ~11% of staff</td><td><span class="ev-flag flag-amber">Operational stability signal</span></td></tr>
+            <tr><td>Continued restructuring / portfolio prioritization</td><td><span class="ev-flag flag-amber">Ongoing strategic repositioning</span></td></tr>
+            <tr><td>Corporate litigation reference (sponsorship-partner collapse)</td><td><span class="ev-flag flag-red">Reputational exposure</span> &mdash; subject not personally named</td></tr>
+            <tr><td>Prior workplace-related regulatory consent decree</td><td><span class="ev-flag flag-red">Historical reputational consideration</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="finding-block reveal">
+      <div class="finding-header"><div class="finding-num">// 03.4</div><div class="finding-title">Client Follow-Up &amp; Quality Control</div><div class="finding-count">24-hour SLA</div></div>
+      <div class="finding-body">
+        <p>The report wasn't the end of the engagement. The follow-up phase simulated exactly what happens after delivery: the client comes back with questions, and the investigator has 24 hours to respond professionally, ready to amend and re-date the report if something needs correcting.</p>
+        <div class="note-block">
+          <div class="note-label">Self-Review Finding</div>
+          <div class="note-body">Reviewing the report ahead of the follow-up window, I caught a leftover template line in the evictions section that had never been replaced with the actual finding. The underlying research was correct &mdash; no eviction history &mdash; but the sentence itself would have read as sloppy, or worse, as an unaddressed red flag. I corrected it before the client's questions arrived instead of after.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="s-alt">
+  <div class="inner">
+    <div class="s-head reveal"><div class="s-num">// 04</div><h2 class="s-title">Due Diligence Analysis</h2><div class="s-line"></div></div>
+    <div class="conc-list">
+      <div class="conc-item reveal"><div class="conc-n">1</div><div><div class="conc-head">No personal derogatory findings</div><div class="conc-body">Across all eight personal-record categories, nothing was identified that would create personal legal or reputational exposure for the subject.</div></div></div>
+      <div class="conc-item reveal reveal-d1"><div class="conc-n">2</div><div><div class="conc-head">Cross-border ownership risk</div><div class="conc-body">Full ownership by a foreign parent holding company introduces regulatory and geopolitical considerations the client should factor into any U.S.-based business decision involving this company.</div></div></div>
+      <div class="conc-item reveal reveal-d2"><div class="conc-n">3</div><div><div class="conc-head">Operational stability signals</div><div class="conc-body">Recent and ongoing workforce reductions suggest continued strategic repositioning worth monitoring, not a closed issue.</div></div></div>
+      <div class="conc-item reveal reveal-d3"><div class="conc-n">4</div><div><div class="conc-head">Corporate reputational exposure</div><div class="conc-body">Litigation tied to a former sponsorship partnership and a prior workplace-related consent decree represent historical reputational considerations, even without personal exposure to the subject.</div></div></div>
+      <div class="conc-item reveal"><div class="conc-n">5</div><div><div class="conc-head">Recommended next steps</div><div class="conc-body">Monitor regulatory developments tied to foreign ownership, track ongoing litigation, conduct a financial posture review, and continue media/reputation monitoring &mdash; the parts of the picture open-source methods alone can flag but not close out.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <div class="s-head reveal"><div class="s-num">// 05</div><h2 class="s-title">Tools &amp; Skills Demonstrated</h2><div class="s-line"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem" class="reveal two-col">
+      <div>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem">// Sources &amp; Methods</p>
+        <div class="tools-wrap">
+          <span class="tool-tag hot">Google Dorking / Advanced Search</span><span class="tool-tag hot">LinkedIn Research</span><span class="tool-tag hot">Secretary of State / Corporate Registry</span><span class="tool-tag">News &amp; Media Search</span><span class="tool-tag">Court Records (State &amp; Federal)</span><span class="tool-tag">Public Records Databases</span><span class="tool-tag">Social Media Analysis</span>
+        </div>
+      </div>
+      <div>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem">// Frameworks</p>
+        <div class="tools-wrap">
+          <span class="tool-tag hot">Corporate Due Diligence Reporting Standard</span><span class="tool-tag hot">Source Documentation / Chain of Custody</span><span class="tool-tag">Client SLA Response Standard</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:2rem" class="reveal">
+      <p style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.8rem">// Skills Demonstrated</p>
+      <div class="skills-strip">
+        <span class="sk-pill">Open-Source Investigation</span><span class="sk-pill">Corporate Registry Research</span><span class="sk-pill">Litigation &amp; Public Records Search</span><span class="sk-pill">Source Documentation</span><span class="sk-pill">Risk Categorization</span><span class="sk-pill">Client-Facing Report Writing</span><span class="sk-pill">Quality Control / Self-Review</span><span class="sk-pill">Time-Sensitive Professional Correspondence</span><span class="sk-pill">Chain-of-Custody Discipline</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Christopher Ham &mdash; OSINT &amp; Intelligence Analyst &mdash; Durham, NC<br>
+  CTIA EC-Council Threat Intelligence Analyst &middot; NCAE-C OSINT Specialist Investigator &middot; OSMOSIS OSC &middot; CEH &middot; CISM &middot; SecurityX &middot; Security+</div>
+  <div class="footer-links">
+    <a href="index.html">Portfolio</a>
+    <a href="https://linkedin.com/in/christopher-ham-cyber" target="_blank">LinkedIn</a>
+    <a href="https://github.com/cham252" target="_blank">GitHub</a>
+    <a href="mailto:Christopher.ham2@protonmail.com">Email</a>
+  </div>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(e=>e.forEach(el=>{if(el.isIntersecting)el.target.classList.add('in')}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
